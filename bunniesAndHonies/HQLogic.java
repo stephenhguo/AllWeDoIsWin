@@ -34,7 +34,6 @@ public class HQLogic extends RobotLogic{
 				if(myController.canSpawn(direction, RobotType.BEAVER))
 				{
 					myController.spawn(direction, RobotType.BEAVER);
-					return; //Can only spawn once per round
 				}
 			}
 		}
