@@ -1,25 +1,16 @@
 package bunniesAndHonies;
 
-import battlecode.common.Direction;
-import battlecode.common.RobotType;
+import battlecode.common.*;
 
 /*
  * This class is overridden with specific unit logic.
  */
 public class RobotLogic 
 {	
+	public final int ATTACKXPORT = 0;
+	public final int ATTACKYPORT = 1;
 	
-	/*
-	 * Used for easy access to directions.
-	 */
-	public Direction[] directions = {Direction.NORTH, 
-									 Direction.NORTH_EAST, 
-									 Direction.EAST, 
-									 Direction.SOUTH_EAST, 
-									 Direction.SOUTH, 
-									 Direction.SOUTH_WEST, 
-									 Direction.WEST, 
-									 Direction.NORTH_WEST};
+	public final int NEXTBUILD = 2;
 	
 	/*
 	 * This is the attack preference for all units.
@@ -49,4 +40,29 @@ public class RobotLogic
 	 * This method is meant to be overridden for each specific unit logic.
 	 */
 	public void run(){}
+	
+	public void attack(RobotController myController, int myRange, Team enemyTeam){
+		if(!myController.isWeaponReady()){
+			return;
+		}
+		RobotInfo[] enemies = myController.senseNearbyRobots(myRange, enemyTeam);
+		if(enemies.length==0){
+			return;
+		}
+		double minHealth = 2000.0;
+		RobotInfo enemyToAttack = enemies[0];
+		for(RobotInfo inf : enemies){
+			if(inf.health<minHealth){
+				minHealth = inf.health;
+				enemyToAttack = inf;
+			}
+		}
+		try {
+			myController.attackLocation(enemyToAttack.location);
+			myController.yield();
+		} catch (GameActionException e) {
+			// TODO Auto-generated catch block
+			//e.printStackTrace();
+		}
+	}
 }
