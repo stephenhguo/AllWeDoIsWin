@@ -5,19 +5,22 @@ import battlecode.common.*;
 public class HQLogic extends RobotLogic{
 
 	private RobotController myController;
-	private final int ATTACKPORT = 0;
+	private int myRange;
+	private Team enemyTeam;
 	//private final int MINEPORT = 1;
-
+	
 	public HQLogic(RobotController controller)
 	{
 		super();
 		myController = controller;
+		myRange = myController.getType().attackRadiusSquared;
+		enemyTeam = myController.getTeam().opponent();
 	}
 	
 	public void run()
 	{
 		try {
-			//attack();
+			attack(myController, myRange, enemyTeam);
 			spawn();
 			broadcastOut();
 		} catch (Exception e) {
@@ -29,7 +32,7 @@ public class HQLogic extends RobotLogic{
 	{
 		if(myController.isCoreReady())
 		{
-			for(Direction direction : directions)
+			for(Direction direction : Direction.values())
 			{
 				if(myController.canSpawn(direction, RobotType.BEAVER))
 				{
@@ -43,10 +46,11 @@ public class HQLogic extends RobotLogic{
 	 * changes the map location into an integer and then broadcasts
 	 * @param loc MapLocation to be broadcast
 	 */
-	public void broadcastLocation(int port, MapLocation loc){
-		int maploc = loc.x*1000+loc.y;
+	public void broadcastLocation(int port1, int port2, MapLocation loc){
 		try {
-			myController.broadcast(port, maploc);
+			myController.setIndicatorString(0, Integer.toString(GameConstants.BROADCAST_MAX_CHANNELS));
+			myController.broadcast(port1, loc.x);
+			myController.broadcast(port2, loc.y);
 		} catch (GameActionException e) {
 			// TODO Auto-generated catch block
 			//e.printStackTrace();
@@ -70,6 +74,6 @@ public class HQLogic extends RobotLogic{
 				}
 			}
 		}
-		broadcastLocation(ATTACKPORT, target);
+		broadcastLocation(ATTACKXPORT, ATTACKYPORT, target);
 	}
 }
