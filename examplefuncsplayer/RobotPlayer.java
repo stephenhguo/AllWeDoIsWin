@@ -80,7 +80,7 @@ public class RobotPlayer {
 				}
 			}
 
-
+			/*
 			if (rc.getType() == RobotType.BASHER) {
 				try {
 					RobotInfo[] adjacentEnemies = rc.senseNearbyRobots(2, enemyTeam);
@@ -163,7 +163,7 @@ public class RobotPlayer {
 					e.printStackTrace();
 				}
 			}
-
+			*/
 			rc.yield();
 		}
 	}

@@ -30,7 +30,7 @@ public class BeaverLogic extends RobotLogic{
 			buildNext();
 			
 			attack(myController, myRange, enemyTeam);
-			//roam();
+			roam(myController, rand);
 			
 			//attTarget = getAttTarget();
 			//move(attTarget);
@@ -38,22 +38,6 @@ public class BeaverLogic extends RobotLogic{
 		} catch (Exception e) {
 			e.printStackTrace();
 		}
-	}
-	
-	public MapLocation getAttTarget(){
-		int msgx;
-		int msgy;
-		try {
-			msgx = myController.readBroadcast(ATTACKXPORT);
-			msgy = myController.readBroadcast(ATTACKYPORT);
-		} catch (GameActionException e) {
-			// TODO Auto-generated catch block
-			//e.printStackTrace();
-			msgx = 0;
-			msgy = 0;
-		}
-
-		return new MapLocation(msgx,msgy);		
 	}
 	
 	public void buildNext(){
@@ -102,50 +86,10 @@ public class BeaverLogic extends RobotLogic{
 				//e.printStackTrace();
 			}
 		} else {
-			//roam();
-			myController.disintegrate();
+			roam(myController, rand);
 		}
 	}
 	
-	public void roam(){
-		int dir = rand.nextInt(8);
-		myController.setIndicatorString(0, Double.toString(myController.getHealth()));
-		Direction movedir;
-		switch(dir){
-		case 0:
-			movedir = Direction.NORTH;
-			break;
-		case 1:
-			movedir = Direction.NORTH_EAST;
-			break;
-		case 2:
-			movedir = Direction.EAST;
-			break;
-		case 3:
-			movedir = Direction.SOUTH_EAST;
-			break;
-		case 4:
-			movedir = Direction.SOUTH;
-			break;
-		case 5:
-			movedir = Direction.SOUTH_WEST;
-			break;
-		case 6:
-			movedir = Direction.WEST;
-			break;
-		case 7:
-			movedir = Direction.NORTH_WEST;
-			break;
-		default:
-			movedir=Direction.NORTH;
-		}
-		try {
-			myController.move(movedir);
-		} catch (GameActionException e) {
-			// TODO Auto-generated catch block
-			//e.printStackTrace();
-		}
-	}
 	
 	private RobotType getType(int i){
 		switch(i){

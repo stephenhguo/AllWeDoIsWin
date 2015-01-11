@@ -6,6 +6,7 @@ public class HQLogic extends RobotLogic{
 
 	private RobotController myController;
 	private int myRange;
+	private Team myTeam;
 	private Team enemyTeam;
 	//private final int MINEPORT = 1;
 	
@@ -14,6 +15,7 @@ public class HQLogic extends RobotLogic{
 		super();
 		myController = controller;
 		myRange = myController.getType().attackRadiusSquared;
+		myTeam = myController.getTeam();
 		enemyTeam = myController.getTeam().opponent();
 	}
 	
@@ -22,7 +24,7 @@ public class HQLogic extends RobotLogic{
 		try {
 			attack(myController, myRange, enemyTeam);
 			spawn();
-			broadcastOut();
+			planAttack();
 		} catch (Exception e) {
 			e.printStackTrace();
 		}
@@ -58,6 +60,21 @@ public class HQLogic extends RobotLogic{
 		}
 	}
 	
+	public void planAttack(){
+		RobotInfo[] myRobots = myController.senseNearbyRobots(999999, myTeam);
+		int numDrones = 0;
+		for(RobotInfo inf : myRobots){
+			if(inf.type == RobotType.DRONE){
+				numDrones++;
+			}
+		}
+		if(numDrones>=15){
+			broadcastOut();
+		} else if(numDrones<=3){
+			broadcastIn();
+		}
+	}
+	
 	public void broadcastOut(){
 		//broadcast attack target
 		MapLocation[] enemyTowers = myController.senseEnemyTowerLocations();
@@ -75,6 +92,11 @@ public class HQLogic extends RobotLogic{
 				}
 			}
 		}
+		broadcastLocation(ATTACKXPORT, ATTACKYPORT, target);
+	}
+	
+	public void broadcastIn(){
+		MapLocation target = myController.getLocation();
 		broadcastLocation(ATTACKXPORT, ATTACKYPORT, target);
 	}
 }
