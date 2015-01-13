@@ -28,6 +28,7 @@ public class RobotPlayer {
 			    myLogic=new AerospaceLogic(controller);
 				break;
 			case BARRACKS:
+				myLogic =new BarrackLogic(controller);
 				break;
 			case BASHER:
 			    myLogic=new BasherLogic(controller);

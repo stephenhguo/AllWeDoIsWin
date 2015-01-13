@@ -11,6 +11,7 @@ public class DroneLogic extends RobotLogic {
 	private MapLocation attTarget;
 	private int myRange;
 	private Team enemyTeam;
+	private Team myTeam;
 	
     public DroneLogic(RobotController controller) {
         super();
@@ -19,11 +20,13 @@ public class DroneLogic extends RobotLogic {
         attTarget = myController.getLocation();
         myRange = myController.getType().attackRadiusSquared;
 		enemyTeam = myController.getTeam().opponent();
+		myTeam = myController.getTeam();
     }
     
     public void run()
 	{
 		try {
+			basicSupply(myController, myTeam);
 			attack(myController, myRange, enemyTeam);
 			attTarget = getAttTarget();
 			move(attTarget);

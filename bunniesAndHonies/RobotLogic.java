@@ -11,6 +11,10 @@ public class RobotLogic
 {	
 	public final int ATTACKXPORT = 0;
 	public final int ATTACKYPORT = 1;
+	public final int SOLDPORTX = 3;
+	public final int SOLDPORTY = 4;
+	public final int TANKPORTX = 5;
+	public final int TANKPORTY = 6;
 	
 	public final int NEXTBUILD = 2;
 	
@@ -68,7 +72,33 @@ public class RobotLogic
 		}
 	}
 	
+	public void basicSupply(RobotController myController, Team myTeam){
+		RobotInfo[] myRobots = myController.senseNearbyRobots(GameConstants.SUPPLY_TRANSFER_RADIUS_SQUARED, myTeam);
+		double minSupply = 2000.0;
+		if(myRobots.length==0){
+			return;
+		}
+		RobotInfo rob = myRobots[0];
+		for(RobotInfo inf : myRobots){
+			if(inf.supplyLevel<minSupply){
+				minSupply = inf.supplyLevel;
+				rob = inf;
+			}
+		}
+		if(minSupply<myController.getSupplyLevel()){
+			try {
+				myController.transferSupplies((int)((myController.getSupplyLevel()-minSupply)/2.0), rob.location);
+			} catch (GameActionException e) {
+				// TODO Auto-generated catch block
+				e.printStackTrace();
+			}
+		}
+	}
+	
 	public void roam(RobotController myController, Random rand){
+		if(!myController.isCoreReady()){
+			return;
+		}
 		int dir = rand.nextInt(8);
 		myController.setIndicatorString(0, Double.toString(myController.getHealth()));
 		Direction movedir;
@@ -100,11 +130,13 @@ public class RobotLogic
 		default:
 			movedir=Direction.NORTH;
 		}
-		try {
-			myController.move(movedir);
-		} catch (GameActionException e) {
-			// TODO Auto-generated catch block
-			//e.printStackTrace();
+		if(myController.canMove(movedir)){
+			try {
+				myController.move(movedir);
+			} catch (GameActionException e) {
+				// TODO Auto-generated catch block
+				//e.printStackTrace();
+			}
 		}
 	}
 }

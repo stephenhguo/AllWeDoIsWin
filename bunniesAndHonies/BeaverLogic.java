@@ -12,12 +12,14 @@ public class BeaverLogic extends RobotLogic{
 	private final int ATTACKYPORT = 1;
 	private final int NEXTBUILD=2;
 	private MapLocation attTarget;
+	private boolean mining;
 
 	static Direction facing;
 	static Random rand;
 
 	private int myRange;
 	private Team enemyTeam;
+	private Team myTeam;
 	
 	public BeaverLogic(RobotController controller)
 	{
@@ -26,7 +28,9 @@ public class BeaverLogic extends RobotLogic{
 		attTarget = controller.getLocation();
 		rand = new Random(myController.getID());
 		myRange = myController.getType().attackRadiusSquared;
+		myTeam = myController.getTeam();
 		enemyTeam = myController.getTeam().opponent();
+		mining = false;
 	}
 	
 	public void run()
@@ -39,6 +43,7 @@ public class BeaverLogic extends RobotLogic{
 			//attack();
 //			MapLocation attTarget = getAttTarget();
 //			move(attTarget);
+			basicSupply(myController, myTeam);
 			buildNext();
 
 			attack(myController, myRange, enemyTeam);
@@ -80,7 +85,7 @@ public class BeaverLogic extends RobotLogic{
 			if(canBuild){
 				try {
 					myController.build(builddir, nextRob);
-					myController.broadcast(NEXTBUILD, (nextBuilding+1)%8);
+					myController.broadcast(NEXTBUILD, (nextBuilding+1)/*%8*/);
 					myController.yield();
 				} catch (GameActionException e) {
 					// TODO Auto-generated catch block
@@ -110,37 +115,60 @@ public class BeaverLogic extends RobotLogic{
 	 */
 	public void moveAndMine() throws GameActionException{
 	    //Finds max ore location
-	    MapLocation maxOreLoc=myController.getLocation();
-	    double maxOre=myController.senseOre(maxOreLoc);
-	    boolean mineAtCurrentLoc=true;
-	    for (MapLocation m: MapLocation.getAllMapLocationsWithinRadiusSq(maxOreLoc, RobotType.BEAVER.sensorRadiusSquared)){
-	        double oreAtM=myController.senseOre(m);
-	        if(oreAtM>maxOre){
-	            maxOre=oreAtM;
-	            maxOreLoc=m;
-	            mineAtCurrentLoc=false;
-	        }
-	    }
-	    //Mines at currentLocation if 
-	    if (mineAtCurrentLoc){
-	        if (myController.isCoreReady() && myController.canMine()){
-	            myController.mine();
-	            myController.yield();
-	        }
-	    } else{
-	        Direction move=myController.getLocation().directionTo(maxOreLoc);
-	        if (myController.isCoreReady() && myController.canMove(move))
-	            myController.move(myController.getLocation().directionTo(maxOreLoc));
-	        	myController.yield();
-	    }
+		if(!mining){
+		    MapLocation maxOreLoc=myController.getLocation();
+		    double maxOre=myController.senseOre(maxOreLoc);
+		    boolean mineAtCurrentLoc=true;
+		    for (MapLocation m: MapLocation.getAllMapLocationsWithinRadiusSq(maxOreLoc, RobotType.BEAVER.sensorRadiusSquared)){
+		        double oreAtM=myController.senseOre(m);
+		        if(oreAtM>maxOre){
+		            maxOre=oreAtM;
+		            maxOreLoc=m;
+		            mineAtCurrentLoc=false;
+		        }
+		    }
+		    //Mines at currentLocation if 
+		    if (mineAtCurrentLoc){
+		        if (myController.isCoreReady() && myController.canMine()){
+		            myController.mine();
+		            int fate = rand.nextInt(100);
+		            if(fate<25){
+		            	mining = true;
+		            }
+		            //mining = true;
+		            myController.yield();
+		        }
+		    } else{
+		        Direction move=myController.getLocation().directionTo(maxOreLoc);
+		        if (myController.isCoreReady() && myController.canMove(move))
+		            myController.move(myController.getLocation().directionTo(maxOreLoc));
+		        	myController.yield();
+		    }
+		} else {
+			 if (myController.isCoreReady() && myController.canMine()){
+		            myController.mine();
+		            myController.yield();
+			 }
+			 if(myController.senseOre(myController.getLocation())<1){
+				 mining = false;
+			 }
+		}
 	}
 	
 	private RobotType getType(int i){
 		switch(i){
 		case 0:
-			return RobotType.HELIPAD;
-		case 1:
 			return RobotType.MINERFACTORY;
+		case 1:
+			return RobotType.HELIPAD;
+		/*
+		case 2:
+			return RobotType.BARRACKS;
+		case 3:
+			return RobotType.TANKFACTORY;
+			
+			
+		
 		case 2:
 			return RobotType.SUPPLYDEPOT;
 		case 3:
@@ -153,8 +181,10 @@ public class BeaverLogic extends RobotLogic{
 			return RobotType.TECHNOLOGYINSTITUTE;
 		case 7:
 			return RobotType.TRAININGFIELD;
+		*/
 		default:
-			return RobotType.SUPPLYDEPOT;
+			return RobotType.HELIPAD;
+			
 		}
 	}
 }

@@ -1,21 +1,21 @@
 package bunniesAndHonies;
 
-import battlecode.common.Direction;
+import battlecode.common.*;
 import battlecode.common.RobotController;
 import battlecode.common.RobotInfo;
 import battlecode.common.RobotType;
-import battlecode.common.Team;
 
-public class MinerFactoryLogic extends RobotLogic {
+public class BarrackLogic extends RobotLogic {
 
 	private RobotController myController;
 	private Team myTeam;
 	
-    public MinerFactoryLogic(RobotController controller) {
+    public BarrackLogic(RobotController controller) {
         super();
         myController = controller;
+        myTeam = myController.getTeam();
     }
-
+    
     public void run()
 	{
 		try {
@@ -28,19 +28,19 @@ public class MinerFactoryLogic extends RobotLogic {
     public void spawn() throws Exception
 	{
     	RobotInfo[] myRobots = myController.senseNearbyRobots(999999, myTeam);
-		int numMine = 0;
+		int numSold = 0;
 		for(RobotInfo inf : myRobots){
-			if(inf.type.equals(RobotType.MINER)){
-				numMine++;
+			if(inf.type.equals(RobotType.SOLDIER)){
+				numSold++;
 			}
 		}
-		if(numMine<31 && myController.isCoreReady())
+		if(numSold<26 && myController.isCoreReady())
 		{
 			for(Direction direction : Direction.values())
 			{
-				if(myController.canSpawn(direction, RobotType.MINER))
+				if(myController.canSpawn(direction, RobotType.SOLDIER))
 				{
-					myController.spawn(direction, RobotType.MINER);
+					myController.spawn(direction, RobotType.SOLDIER);
 					return; //Can only spawn once per round
 				}
 			}
