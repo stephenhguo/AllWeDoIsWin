@@ -1,46 +1,42 @@
-package bunniesAndHonies;
+package team397;
 
 import java.util.Random;
 
-import battlecode.common.*;
+import battlecode.common.Direction;
+import battlecode.common.GameActionException;
+import battlecode.common.MapLocation;
+import battlecode.common.RobotController;
+import battlecode.common.Team;
 
-public class DroneLogic extends RobotLogic {
+public class TankLogic extends RobotLogic {
 
 	private RobotController myController;
-	Random rand;
-	private MapLocation attTarget;
 	private int myRange;
 	private Team enemyTeam;
-	private Team myTeam;
+	private Random rand;
+	private MapLocation attTarget;
 	
-    public DroneLogic(RobotController controller) {
+    public TankLogic(RobotController controller) {
         super();
         myController = controller;
-        rand = new Random(myController.getID());
-        attTarget = myController.getLocation();
         myRange = myController.getType().attackRadiusSquared;
 		enemyTeam = myController.getTeam().opponent();
-		myTeam = myController.getTeam();
+		rand = new Random(myController.getID());
     }
     
-    public void run()
-	{
-		try {
-			basicSupply(myController, myTeam);
-			attack(myController, myRange, enemyTeam);
-			attTarget = getAttTarget();
-			move(attTarget);
-		} catch (Exception e) {
-			e.printStackTrace();
-		}
-	}
+    public void run(){
+    	attack(myController, myRange, enemyTeam);
+    	attTarget = getAttTarget();
+		move(attTarget);
+		roam(myController, rand);
+    }
     
     public MapLocation getAttTarget(){
 		int msgx;
 		int msgy;
 		try {
-			msgx = myController.readBroadcast(ATTACKXPORT);
-			msgy = myController.readBroadcast(ATTACKYPORT);
+			msgx = myController.readBroadcast(TANKPORTX);
+			msgy = myController.readBroadcast(TANKPORTY);
 		} catch (GameActionException e) {
 			// TODO Auto-generated catch block
 			//e.printStackTrace();
@@ -64,5 +60,4 @@ public class DroneLogic extends RobotLogic {
 			roam(myController, rand);
 		}
 	}
-
 }

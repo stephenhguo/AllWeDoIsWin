@@ -1,4 +1,4 @@
-package bunniesAndHonies;
+package team397;
 
 import battlecode.common.Direction;
 import battlecode.common.RobotController;
