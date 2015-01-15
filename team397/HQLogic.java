@@ -8,13 +8,16 @@ public class HQLogic extends RobotLogic{
 	private int beaverNum;
 	//private final int MINEPORT = 1;
 	
-	public HQLogic(RobotController controller)
+	public HQLogic(RobotController controller) throws GameActionException
 	{
 		super(controller);
 		myRange = rc.getType().attackRadiusSquared;
-		myTeam = rc.getTeam();
-		enemyTeam = rc.getTeam().opponent();
 		beaverNum=0;
+		
+		MapLocation[] enemyTowers = rc.senseEnemyTowerLocations();
+		MapLocation target = rc.senseEnemyHQLocation();
+		radio.setEnemyTowerLocs(enemyTowers);
+		radio.setEnemyHQLoc(target);
 	}
 	
 	public void run()
@@ -97,6 +100,7 @@ public class HQLogic extends RobotLogic{
 			}
 		}
 		radio.setAttackLoc(target, type);
+		radio.setEnemyTowerLocs(enemyTowers);
 	}
 	
 	public void retreat(RobotType type) throws GameActionException{

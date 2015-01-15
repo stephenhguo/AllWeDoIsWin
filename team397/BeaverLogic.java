@@ -10,7 +10,6 @@ public class BeaverLogic extends RobotLogic{
 	private boolean mining;
 
 	static Direction facing;
-	static Random rand;
 
 	private int myRange;
 	
@@ -18,17 +17,12 @@ public class BeaverLogic extends RobotLogic{
 	{
 		super(controller);
 		attTarget = rc.getLocation();
-		rand = new Random(rc.getID());
 		myRange = rc.getType().attackRadiusSquared;
 		mining = false;
 	}
 	
 	public void run() throws GameActionException
 	{
-	    rand=new Random(rc.getID());
-	    
-
-
 		//for beavers, what if we change this to a, if under attack, fight back, else go mine/build
 		//attack();
 //			MapLocation attTarget = getAttTarget();
@@ -38,7 +32,7 @@ public class BeaverLogic extends RobotLogic{
 
 		attack(myRange);
 		moveAndMine();
-		roam(rand);
+		roam();
 		
 		//attTarget = getAttTarget();
 		//move(attTarget);
@@ -51,7 +45,6 @@ public class BeaverLogic extends RobotLogic{
 		}
 		
 		int nextBuilding = radio.checkNextBuild();
-		System.out.println(nextBuilding);
 
 		RobotType nextRob = getType(nextBuilding);
 		if(rc.hasBuildRequirements(nextRob)){
@@ -72,7 +65,7 @@ public class BeaverLogic extends RobotLogic{
 		}
 	}
 	
-	public void move(MapLocation target){
+	public void move(MapLocation target) throws GameActionException{
 		Direction movedir = rc.getLocation().directionTo(target);
 		if(rc.canMove(movedir)){
 			try {
@@ -82,7 +75,7 @@ public class BeaverLogic extends RobotLogic{
 				//e.printStackTrace();
 			}
 		} else {
-			roam(rand);
+			roam();
 		}
 	}
 
@@ -118,7 +111,7 @@ public class BeaverLogic extends RobotLogic{
 		    } else{
 		        Direction move=rc.getLocation().directionTo(maxOreLoc);
 		        if (rc.isCoreReady() && rc.canMove(move))
-		            rc.move(rc.getLocation().directionTo(maxOreLoc));
+		            goTo(maxOreLoc);
 		        	rc.yield();
 		    }
 		} else {

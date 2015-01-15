@@ -9,30 +9,24 @@ import battlecode.common.*;
  */
 public class RobotLogic 
 {	
-	public final int ATTACKXPORT = 0;
-	public final int ATTACKYPORT = 1;
-	public final int SOLDPORTX = 3;
-	public final int SOLDPORTY = 4;
-	public final int TANKPORTX = 5;
-	public final int TANKPORTY = 6;
-	
-	
-	public final int NEXTBUILD = 2;
-	
 	public RobotController rc;
 	public MessageMaster radio;
 	public Team myTeam, enemyTeam;
-	public static MapLocation[] justVisited = new MapLocation[4];
+	public MapLocation justVisited;
+	public Random rand;
 
+	/* add back in if we want minimap
 	public static final int MMSIZE = 9; // must be odd
 	public static boolean[][] miniMap= new boolean[MMSIZE][MMSIZE];
 	public static int row_0 = 0, col_0 = 0; //these will change to indicate the 0 position of the minimap
+	*/
 	
 	public RobotLogic(RobotController controller){
 		rc = controller;
 		radio = new MessageMaster(rc);
 		myTeam = rc.getTeam();
 		enemyTeam = myTeam.opponent();
+		rand = new Random(rc.getID());
 	}
 	
 	
@@ -91,7 +85,7 @@ public class RobotLogic
 		}
 	}
 	
-	public void basicSupply(){
+	public void basicSupply() throws GameActionException{
 		RobotInfo[] myRobots = rc.senseNearbyRobots(GameConstants.SUPPLY_TRANSFER_RADIUS_SQUARED, myTeam);
 		double minSupply = 2000.0;
 		if(myRobots.length==0){
@@ -104,78 +98,15 @@ public class RobotLogic
 				rob = inf;
 			}
 		}
-		if(minSupply<rc.getSupplyLevel()){
-			try {
-				rc.transferSupplies((int)((rc.getSupplyLevel()-minSupply)/2.0), rob.location);
-			} catch (GameActionException e) {
-				// TODO Auto-generated catch block
-				e.printStackTrace();
-			}
-		}
-	}
-	
-	public void buildMiniMap(){
-		
-		MapLocation myLoc = rc.getLocation();
-		int x, y;
+		MapLocation giveTo = rc.senseRobot(rob.ID).location;
+		if(minSupply<rc.getSupplyLevel() && rc.senseRobotAtLocation(giveTo).equals(rob) && giveTo.distanceSquaredTo(rc.getLocation()) <= GameConstants.SUPPLY_TRANSFER_RADIUS_SQUARED){
+			rc.transferSupplies((int)((rc.getSupplyLevel()-minSupply)/2.0), giveTo);
 
-		for(int i = 0; i <= MMSIZE; i++){
-			for(int j = 0; j <= MMSIZE; j++){
-				x = myLoc.x - (int) (MMSIZE / 2) + i;
-				y = myLoc.y - (int) (MMSIZE / 2) + j;
-				if (rc.senseTerrainTile(new MapLocation(x,y)) == TerrainTile.VOID)
-					miniMap[i][j] = false;
-				else
-					miniMap[i][j] = true;
-			}
 		}
-		
-		row_0 = 0;
-		col_0 = 0;
-		
 	}
-	
-	public void updateMiniMap(){
-		
-		MapLocation last = justVisited[0], now = rc.getLocation();
-		
-		int movement_x = now.x - last.x, movement_y = now.y - last.y;
-		row_0 = (row_0 + movement_x) % MMSIZE;
-		
-		if (movement_x != 0){
-			int replace = (row_0 + MMSIZE - movement_x) % MMSIZE;
-			int x = now.x + (int) (MMSIZE / 2) * movement_x, y, realI;
-			int centerY = last.y;
-			for(int i = 0; i <= MMSIZE; i++){
-				y = centerY - (int) (MMSIZE / 2) + i;
-				realI = (i + col_0) % MMSIZE;
-				if (rc.senseTerrainTile(new MapLocation(x,y)) == TerrainTile.VOID)
-					miniMap[replace][realI] = false;
-				else
-					miniMap[replace][realI] = true;
-			}
-		}
-		
-		col_0 = (col_0 + movement_y) % MMSIZE;
-		
-		if (movement_y != 0){
-			int replace = (col_0 + MMSIZE - movement_y) % MMSIZE;
-			int y = now.y + (int) (MMSIZE / 2) * movement_y, x, realI;
-			int centerX = now.x;
-			for(int i = 0; i <= MMSIZE; i++){
-				x = centerX - (int) (MMSIZE / 2) + i;
-				realI = (i + row_0) % MMSIZE;
-				if (rc.senseTerrainTile(new MapLocation(x,y)) == TerrainTile.VOID)
-					miniMap[realI][replace] = false;
-				else
-					miniMap[realI][replace] = true;
-			}
-		}
-		
-	}
-	
-	
-	public void roam(Random rand){
+	//old roam
+/*
+	public void roam(){
 
 		if(!rc.isCoreReady()){
 			return;
@@ -213,6 +144,7 @@ public class RobotLogic
 		}
 		if(rc.canMove(movedir)){
 			try {
+				justVisited = rc.getLocation();
 				rc.move(movedir);
 			} catch (GameActionException e) {
 				// TODO Auto-generated catch block
@@ -220,35 +152,189 @@ public class RobotLogic
 			}
 		}
 	}
-/*
-	public void goTo(MapLocation goal, int goalRadSq){
-		
-		
-		
+*/
+
+	//new roam
+	
+	public void roam() throws GameActionException{
+		goTo();
 	}
 	
-	public double[] makePF(MapLocation goal, int goalRadSq){
+	public void goTo() throws GameActionException{
+		goTo(null, 0);
+	}
+	
+	public void goTo(MapLocation goal) throws GameActionException{
+		goTo(goal, 0);
+	}
+	
+	public void goTo(MapLocation goal, int goalRadSq) throws GameActionException{
+		
+		if(!rc.isCoreReady()){
+			return;
+		}
+		
+		Direction newDir = nextMove(goal, goalRadSq);
+		justVisited = rc.getLocation();
+		if(rc.canMove(newDir)){
+			rc.move(newDir);
+		}
+	}
+	
+	public Direction nextMove() throws GameActionException{
+		return nextMove(null, 0);
+	}
+	
+	public Direction nextMove(MapLocation goal, int goalRadSq) throws GameActionException{
 	
 		//RobotInfo[] enemyBots = rc.senseNearbyRobots(5, myTeam.opponent());
-		RobotInfo[] friendBots = rc.senseNearbyRobots(2, myTeam);
+		int byte1 = Clock.getBytecodeNum();
+
+		//RobotInfo[] friendBots = rc.senseNearbyRobots(2, myTeam);
+		MapLocation[] towers = radio.getEnemyTowerLocs();
+		MapLocation myLoc = rc.getLocation();
+		//codes
+		int GOAL = 0, VOID = 1, TOWER = 2, JUSTVISITED = 3;
 		
-		int[][] near = new int[3][3];
+		Direction[] options_unedited = Direction.values(), options;
+		boolean[] canGo = new boolean[options_unedited.length];
+		int counter = 0, none = -1;
+		for(int i = 0; i < canGo.length; i++){
+			if (!options_unedited[i].equals(Direction.NONE))
+				canGo[i] = rc.canMove(options_unedited[i]);
+			else{
+				canGo[i] = true;
+				none = counter;
+			}
+			if(canGo[i])
+				counter++;
+			
+		}
+		options = new Direction[counter];
+		double[] values = new double[counter];
 		
-		//update //update the 'near' variable for all thigns you care about
+		if(none != -1)	
+			values[none] = -5.;
+		
+		counter = 0;
+		for(int i = 0; i < canGo.length; i++){
+			if (canGo[i]){
+				options[counter] = options_unedited[i];
+				counter++;
+			}
+		}
 		
 		
+		for(int i = 0; i < towers.length; i++){ //update for towers
+			if (!towers[i].equals(goal))
+				update(options, values, towers[i], TOWER);
+		}
+		
+		/*We can add this back in if we decide we want walls to be repulsive
+		MapLocation[] voidSQ = new MapLocation[(int)(MMSIZE*MMSIZE / 2 + 1)]; // get void squares
+		int count = 0;
+		for(int i = 0; i < MMSIZE; i++){
+			for(int j = 0; j < MMSIZE; j++)
+			{
+				if (!miniMap[i][j]){
+					voidSQ[count] = locAtIndex(i,j);
+					count++;
+				}
+						
+			}
+		}
+		
+		for(int i = 0; i < count; i++)
+			update(near, voidSQ[i], VOID); //update for void spots  */
+		
+		if (justVisited != null){
+			update(options, values, justVisited, JUSTVISITED);
+		}
+		
+		if (goal != null)
+				update(options, values, goal, GOAL, goalRadSq); //update for goal
+		
+		
+		int index = 0, count = 0;
+		double maxVal = -1000;
+		for(int i = 0; i < values.length; i++){
+			if(values[i] > maxVal){
+				maxVal = values[i];
+				index = i;
+				count++;
+			}
+			else if(values[i] == maxVal){
+				index += i * Math.pow(10, count);
+				count++;
+			}
+		}
+		
+		int possibilities = (int) Math.log10(index) + 1;
+		int selection = (int)(rand.nextDouble() * possibilities);
+		Direction newDir = options[(int) ((index % Math.pow(10, selection + 1)) / Math.pow(10, selection))];
+		
+		int byte2 = Clock.getBytecodeNum();
+		String str = "";
+		for(int i = 0; i < values.length; i++){
+			str += options[i] +": " + values[i] + ", ";
+		}
+		rc.setIndicatorString(0, str);
+		
+		//System.out.print(byte2 - byte1);
+		
+		return newDir;
 		
 	}
 	
-	public void update(int[] spots, MapLocation other, int code) // for processing walls, goal
+	public void update(Direction[] options, double[] values, MapLocation other, int code, int rad_sq) // for processing walls, goal
 	{
 		//finish, use switch inside for loop
+		int d_sq;
+		double val;
+		for(int i = 0; i < options.length; i++){
+			d_sq = other.distanceSquaredTo(rc.getLocation().add(options[i]));
+			switch(code){
+			case 0: //goal
+				val = decay(d_sq, 100., rad_sq); break;
+			case 1: //void
+				val = step(d_sq, -30., 0); break;
+			case 2: //tower
+				val = step(d_sq, -30., 24); break;
+			case 3: //justvisited
+				val = linear(d_sq, -5, 1); break;
+			default:
+				val = 0;
+			}
+			values[i] = addPotentials(values[i], val); 
+			
+		}
 	}
 	
-	public void update(int[] spots, RobotInfo[] other) // for processing bots
+	
+	public void update(Direction[] options, double[] values, RobotInfo other) // for processing bots
 	{
-		//finish, use switch inside for loop
+		int d_sq;
+		double val;
+		for(int i = 0; i < options.length; i++){
+			d_sq = other.location.distanceSquaredTo(rc.getLocation().add(options[i]));
+			if (other.team == myTeam)
+				val = step(d_sq, -30., 0);
+			else
+				val = 0;
+			
+			values[i] = addPotentials(values[i], val); 
+
+		}
 	}
+	
+	public void update(Direction[] options, double[] values, MapLocation other, int code){
+		update(options, values, other, code, 0);
+	}
+	
+	private double addPotentials(double a, double b){
+		return Math.min(Math.max(a,b), Math.max(a+b, Math.min(a,b)));
+	}
+
 	
 	private double linear(int d_sq, double weight, int r_sq){
 		if (d_sq < r_sq)
@@ -266,7 +352,7 @@ public class RobotLogic
 	
 	private double decay(int d_sq, double weight, int r_sq){
 		if (d_sq >= r_sq)
-			return weight / (1.- (d_sq-r_sq));
+			return weight / (1.+ (d_sq-r_sq));
 		else
 			return weight*(d_sq/r_sq)*(d_sq/r_sq);
 			
@@ -277,20 +363,95 @@ public class RobotLogic
 	}
 	
 	private double decayUpTo(int d_sq, double w_out, double w_in, int r_sq){
-		if (d_sq >= r_sq)
-			return w_out / (1.- (d_sq-r_sq));
+		if (d_sq > r_sq)
+			return w_out / (1.+ (d_sq-r_sq));
 		else
 			return w_in;
 	}
 	
-	private double linearUpTo(d_sq, w_out, w_in, r_sq){
+	private double linearUpTo(int d_sq, double w_out, double w_in, int boundary_sq, int r_sq){
 		if (d_sq >= r_sq)
-			return 
-					
-					//finish this
+			return w_out / r_sq * (boundary_sq + r_sq - d_sq);
+		else
+			return w_in;
 	}
 	
-	public void pot
+	
+	//Add back in if we want minimap
+	/*public void buildMiniMap(){
+		
+		MapLocation myLoc = rc.getLocation();
+		int x, y;
+
+		for(int i = 0; i <= MMSIZE; i++){
+			for(int j = 0; j <= MMSIZE; j++){
+				x = myLoc.x - (int) (MMSIZE / 2) + i;
+				y = myLoc.y - (int) (MMSIZE / 2) + j;
+				if (rc.senseTerrainTile(new MapLocation(x,y)) == TerrainTile.VOID)
+					miniMap[i][j] = false;
+				else
+					miniMap[i][j] = true;
+			}
+		}
+		
+		row_0 = 0;
+		col_0 = 0;
+		
+	}
+	
+	public void updateMiniMap(){
+		
+		MapLocation last = justVisited, now = rc.getLocation();
+		
+		int movement_x = now.x - last.x, movement_y = now.y - last.y;
+		row_0 = (row_0 + movement_x) % MMSIZE;
+		
+		if (movement_x != 0){
+			int replace = (row_0 + MMSIZE - movement_x) % MMSIZE;
+			int x = now.x + (int) (MMSIZE / 2) * movement_x, y, realI;
+			int centerY = last.y;
+			for(int i = 0; i <= MMSIZE; i++){
+				y = centerY - (int) (MMSIZE / 2) + i;
+				realI = (i + col_0) % MMSIZE;
+				if (rc.senseTerrainTile(new MapLocation(x,y)) == TerrainTile.VOID)
+					miniMap[replace][realI] = false;
+				else
+					miniMap[replace][realI] = true;
+			}
+		}
+		
+		col_0 = (col_0 + movement_y) % MMSIZE;
+		
+		if (movement_y != 0){
+			int replace = (col_0 + MMSIZE - movement_y) % MMSIZE;
+			int y = now.y + (int) (MMSIZE / 2) * movement_y, x, realI;
+			int centerX = now.x;
+			for(int i = 0; i <= MMSIZE; i++){
+				x = centerX - (int) (MMSIZE / 2) + i;
+				realI = (i + row_0) % MMSIZE;
+				if (rc.senseTerrainTile(new MapLocation(x,y)) == TerrainTile.VOID)
+					miniMap[realI][replace] = false;
+				else
+					miniMap[realI][replace] = true;
+			}
+		}
+		
+	}
+	
+	public boolean inMiniMap(MapLocation loc){
+		MapLocation myLoc = rc.getLocation();
+		return Math.abs(myLoc.x - loc.x) <= (int) (MMSIZE / 2) && Math.abs(myLoc.y - loc.y) <= (int) (MMSIZE / 2);
+	}
+	
+	public MapLocation locAtIndex(int i, int j){
+		int dx = (MMSIZE - i + row_0) % MMSIZE;
+		int dy = (MMSIZE - j + col_0) % MMSIZE;
+		MapLocation myLoc = rc.getLocation();
+		return new MapLocation(myLoc.x + dx, myLoc.y + dy);
+	}
 	*/
+	
 }
+
+
 

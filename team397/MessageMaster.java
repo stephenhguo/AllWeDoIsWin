@@ -12,6 +12,9 @@ public class MessageMaster {
 	public final int[] SOLDIERATTACK = {3,4}; //(x,y)
 	public final int[] TANKATTACK = {5,6}; // (x,y)
 	public final int NEXTBUILDING = 2;
+	public final int ENEMYTOWER_LOCS = 1003; //begins list of enemy tower locations
+	public int ENEMYTOWERS_NUM = 1002;
+	public final int[] ENEMYHQLOC = {1000, 1001};
 	
 	//internal codes
 	private final int ATTACK = 0;
@@ -44,9 +47,36 @@ public class MessageMaster {
 		rc.broadcast(channel[1], loc.y);
 	}
 	
+	public void setEnemyHQLoc(MapLocation loc) throws GameActionException{
+		rc.broadcast(ENEMYHQLOC[0], loc.x);
+		rc.broadcast(ENEMYHQLOC[1], loc.y);
+	}
+	
+	public MapLocation getEnemyHQLoc() throws GameActionException{
+		return new MapLocation(rc.readBroadcast(ENEMYHQLOC[0]), rc.readBroadcast(ENEMYHQLOC[1]));
+	}
+	
+	public void setEnemyTowerLocs(MapLocation[] spots) throws GameActionException{
+		rc.broadcast(ENEMYTOWERS_NUM, spots.length);
+		for(int i = 0; i < spots.length; i++){
+			rc.broadcast(ENEMYTOWER_LOCS + 2*i, spots[i].x);
+			rc.broadcast(ENEMYTOWER_LOCS + 2*i + 1, spots[i].y);
+		}
+	}
+	
+	public MapLocation[] getEnemyTowerLocs() throws GameActionException{
+		int num = rc.readBroadcast(ENEMYTOWERS_NUM);
+		MapLocation[] result = new MapLocation[num];
+		for(int i = 0; i < num; i ++){
+			result[i] = new MapLocation(rc.readBroadcast(ENEMYTOWER_LOCS + 2*i), rc.readBroadcast(ENEMYTOWER_LOCS + 2*i + 1));
+		}
+		return result;
+	}
+	
 	private int[] typeSwitch(RobotType type){
 		return typeSwitch(type,ATTACK);
 	}
+	
 	
 	private int[] typeSwitch(RobotType type, int code){
 		RobotType[] list = {RobotType.HQ, //0

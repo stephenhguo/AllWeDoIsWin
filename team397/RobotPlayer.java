@@ -91,6 +91,9 @@ public class RobotPlayer {
 		/*
 		 * Run unit logic for the duration of the game.
 		 */
+		
+		//myLogic.buildMiniMap(); Add back in if we want minimap functionality
+		
 		while(true)
 		{
 			myLogic.run();
