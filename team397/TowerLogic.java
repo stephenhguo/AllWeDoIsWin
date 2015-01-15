@@ -4,25 +4,19 @@ import battlecode.common.*;
 
 public class TowerLogic extends RobotLogic{
 
-	private RobotController myController;
 	private int myRange;
-	private Team enemyTeam;
-	private Team myTeam;
 	
 	public TowerLogic(RobotController controller)
 	{
-		super();
-		myController = controller;
-		myRange = myController.getType().attackRadiusSquared;
-		myTeam = myController.getTeam();
-		enemyTeam = myController.getTeam().opponent();
+		super(controller);
+		myRange = rc.getType().attackRadiusSquared;
 	}
 	
 	public void run()
 	{
 		try {
-			basicSupply(myController, myTeam);
-			attack(myController, myRange, enemyTeam);
+			basicSupply();
+			attack(myRange);
 		} catch (Exception e) {
 			e.printStackTrace();
 		}

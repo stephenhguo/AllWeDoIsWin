@@ -4,11 +4,9 @@ import battlecode.common.*;
 
 public class HelipadLogic extends RobotLogic {
 
-	private RobotController myController;
 	
     public HelipadLogic(RobotController controller) {
-        super();
-        myController = controller;
+        super(controller);
     }
     
     public void run()
@@ -22,13 +20,13 @@ public class HelipadLogic extends RobotLogic {
     
     public void spawn() throws Exception
 	{
-		if(myController.isCoreReady())
+		if(rc.isCoreReady())
 		{
 			for(Direction direction : Direction.values())
 			{
-				if(myController.canSpawn(direction, RobotType.DRONE))
+				if(rc.canSpawn(direction, RobotType.DRONE))
 				{
-					myController.spawn(direction, RobotType.DRONE);
+					rc.spawn(direction, RobotType.DRONE);
 					return; //Can only spawn once per round
 				}
 			}

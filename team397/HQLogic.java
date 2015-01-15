@@ -4,27 +4,23 @@ import battlecode.common.*;
 
 public class HQLogic extends RobotLogic{
 
-	private RobotController myController;
 	private int myRange;
-	private Team myTeam;
-	private Team enemyTeam;
 	private int beaverNum;
 	//private final int MINEPORT = 1;
 	
 	public HQLogic(RobotController controller)
 	{
-		super();
-		myController = controller;
-		myRange = myController.getType().attackRadiusSquared;
-		myTeam = myController.getTeam();
-		enemyTeam = myController.getTeam().opponent();
+		super(controller);
+		myRange = rc.getType().attackRadiusSquared;
+		myTeam = rc.getTeam();
+		enemyTeam = rc.getTeam().opponent();
 		beaverNum=0;
 	}
 	
 	public void run()
 	{
 		try {
-			attack(myController, myRange, enemyTeam);
+			attack(myRange);
 			basicSupply();
 			spawn();
 			planAttack();
@@ -38,36 +34,22 @@ public class HQLogic extends RobotLogic{
 		if(beaverNum>5){
 			return;
 		}
-		if(myController.isCoreReady())
+		if(rc.isCoreReady())
 		{
 			for(Direction direction : Direction.values())
 			{
-				if(myController.canSpawn(direction, RobotType.BEAVER))
+				if(rc.canSpawn(direction, RobotType.BEAVER))
 				{
-					myController.spawn(direction, RobotType.BEAVER);
+					rc.spawn(direction, RobotType.BEAVER);
 					return;
 				}
 			}
 		}
 	}
 	
-	/**
-	 * changes the map location into an integer and then broadcasts
-	 * @param loc MapLocation to be broadcast
-	 */
-	public void broadcastLocation(int port1, int port2, MapLocation loc){
-		try {
-			myController.setIndicatorString(0, Integer.toString(GameConstants.BROADCAST_MAX_CHANNELS));
-			myController.broadcast(port1, loc.x);
-			myController.broadcast(port2, loc.y);
-		} catch (GameActionException e) {
-			// TODO Auto-generated catch block
-			//e.printStackTrace();
-		}
-	}
 	
-	public void planAttack(){
-		RobotInfo[] myRobots = myController.senseNearbyRobots(999999, myTeam);
+	public void planAttack() throws GameActionException{
+		RobotInfo[] myRobots = rc.senseNearbyRobots(999999, myTeam);
 		int numDrones = 0;
 		int numBeaves = 0;
 		int numSold = 0;
@@ -84,26 +66,27 @@ public class HQLogic extends RobotLogic{
 		}
 		beaverNum = numBeaves;
 		if(numDrones>=20){
-			broadcastOut(ATTACKXPORT, ATTACKYPORT);
+			attackEnemyTower(RobotType.DRONE);
 		} else if(numDrones<=3){
-			broadcastIn(ATTACKXPORT, ATTACKYPORT);
+			retreat(RobotType.DRONE);
 		}
 		if(numSold>=15){
-			broadcastOut(SOLDPORTX, SOLDPORTY);
+			attackEnemyTower(RobotType.SOLDIER);
 		} else if(numSold<=3){
-			broadcastIn(SOLDPORTX, SOLDPORTY);
+			retreat(RobotType.SOLDIER);
 		}
-		broadcastOut(TANKPORTX, TANKPORTY);
+		
+		attackEnemyTower(RobotType.TANK);
 	}
 	
-	public void broadcastOut(int XPORT, int YPORT){
+	public void attackEnemyTower(RobotType type) throws GameActionException{
 		//broadcast attack target
-		MapLocation[] enemyTowers = myController.senseEnemyTowerLocations();
+		MapLocation[] enemyTowers = rc.senseEnemyTowerLocations();
 		MapLocation target;
 		if(enemyTowers.length==0){
-			target = myController.senseEnemyHQLocation();
+			target = rc.senseEnemyHQLocation();
 		} else{
-			MapLocation ownloc = myController.senseHQLocation();
+			MapLocation ownloc = rc.senseHQLocation();
 			int mindist = ownloc.distanceSquaredTo(enemyTowers[0]);
 			target = enemyTowers[0];
 			for(int i=1; i<enemyTowers.length; i++){
@@ -113,16 +96,16 @@ public class HQLogic extends RobotLogic{
 				}
 			}
 		}
-		broadcastLocation(XPORT, YPORT, target);
+		radio.setAttackLoc(target, type);
 	}
 	
-	public void broadcastIn(int XPORT, int YPORT){
-		MapLocation target = myController.getLocation();
-		broadcastLocation(XPORT, YPORT, target);
+	public void retreat(RobotType type) throws GameActionException{
+		MapLocation target = rc.getLocation();
+		radio.setAttackLoc(target, type);
 	}
 	
 	public void basicSupply(){
-		RobotInfo[] myRobots = myController.senseNearbyRobots(GameConstants.SUPPLY_TRANSFER_RADIUS_SQUARED, myTeam);
+		RobotInfo[] myRobots = rc.senseNearbyRobots(GameConstants.SUPPLY_TRANSFER_RADIUS_SQUARED, myTeam);
 		double minSupply = 2000.0;
 		if(myRobots.length==0){
 			return;
@@ -135,7 +118,7 @@ public class HQLogic extends RobotLogic{
 			}
 		}
 		try {
-			myController.transferSupplies((int)myController.getSupplyLevel(), rob.location);
+			rc.transferSupplies((int)rc.getSupplyLevel(), rob.location);
 		} catch (GameActionException e) {
 			// TODO Auto-generated catch block
 			e.printStackTrace();

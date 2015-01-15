@@ -6,11 +6,6 @@ import battlecode.common.*;
 
 public class BeaverLogic extends RobotLogic{
 
-	private RobotController myController;
-
-	private final int ATTACKXPORT = 0;
-	private final int ATTACKYPORT = 1;
-	private final int NEXTBUILD=2;
 	private MapLocation attTarget;
 	private boolean mining;
 
@@ -18,94 +13,76 @@ public class BeaverLogic extends RobotLogic{
 	static Random rand;
 
 	private int myRange;
-	private Team enemyTeam;
-	private Team myTeam;
 	
 	public BeaverLogic(RobotController controller)
 	{
-		super();
-		myController = controller;
-		attTarget = controller.getLocation();
-		rand = new Random(myController.getID());
-		myRange = myController.getType().attackRadiusSquared;
-		myTeam = myController.getTeam();
-		enemyTeam = myController.getTeam().opponent();
+		super(controller);
+		attTarget = rc.getLocation();
+		rand = new Random(rc.getID());
+		myRange = rc.getType().attackRadiusSquared;
 		mining = false;
 	}
 	
-	public void run()
+	public void run() throws GameActionException
 	{
-	    rand=new Random(myController.getID());
+	    rand=new Random(rc.getID());
 	    
-		try {
 
-			//for beavers, what if we change this to a, if under attack, fight back, else go mine/build
-			//attack();
+
+		//for beavers, what if we change this to a, if under attack, fight back, else go mine/build
+		//attack();
 //			MapLocation attTarget = getAttTarget();
 //			move(attTarget);
-			basicSupply(myController, myTeam);
-			buildNext();
+		basicSupply();
+		buildNext();
 
-			attack(myController, myRange, enemyTeam);
-			moveAndMine();
-			roam(myController, rand);
-			
-			//attTarget = getAttTarget();
-			//move(attTarget);
-			
+		attack(myRange);
+		moveAndMine();
+		roam(rand);
+		
+		//attTarget = getAttTarget();
+		//move(attTarget);
 
-		} catch (Exception e) {
-			e.printStackTrace();
-		}
 	}
 	
-	public void buildNext(){
-		if(!myController.isCoreReady()){
+	public void buildNext() throws GameActionException{
+		if(!rc.isCoreReady()){
 			return;
 		}
-		int nextBuilding;
-		try {
-			nextBuilding = myController.readBroadcast(NEXTBUILD);
-		} catch (GameActionException e) {
-			// TODO Auto-generated catch block
-			//e.printStackTrace();
-			nextBuilding = 0;
-		}
+		
+		int nextBuilding = radio.checkNextBuild();
+		System.out.println(nextBuilding);
+
 		RobotType nextRob = getType(nextBuilding);
-		if(myController.hasBuildRequirements(nextRob)){
+		if(rc.hasBuildRequirements(nextRob)){
 			boolean canBuild = false;
 			Direction builddir = Direction.NORTH;
 			for(Direction dir : Direction.values()){
-				if(myController.canBuild(dir, nextRob)){
+				if(rc.canBuild(dir, nextRob)){
 					builddir = dir;
 					canBuild = true;
 					break;
 				}
 			}
 			if(canBuild){
-				try {
-					myController.build(builddir, nextRob);
-					myController.broadcast(NEXTBUILD, (nextBuilding+1)/*%8*/);
-					myController.yield();
-				} catch (GameActionException e) {
-					// TODO Auto-generated catch block
-					//e.printStackTrace();
-				}
+				rc.build(builddir, nextRob);
+				radio.newBuild(nextBuilding + 1);
+				rc.yield();
 			}
 		}
 	}
 	
 	public void move(MapLocation target){
-		Direction movedir = myController.getLocation().directionTo(target);
-		if(myController.canMove(movedir)){
+		Direction movedir = rc.getLocation().directionTo(target);
+		if(rc.canMove(movedir)){
 			try {
-				myController.move(movedir);
+				rc.move(movedir);
 			} catch (GameActionException e) {
 				// TODO Auto-generated catch block
 				//e.printStackTrace();
 			}
 		} else {
-			roam(myController, rand);
+			roam(rand);
 		}
 	}
 
@@ -116,11 +93,11 @@ public class BeaverLogic extends RobotLogic{
 	public void moveAndMine() throws GameActionException{
 	    //Finds max ore location
 		if(!mining){
-		    MapLocation maxOreLoc=myController.getLocation();
-		    double maxOre=myController.senseOre(maxOreLoc);
+		    MapLocation maxOreLoc=rc.getLocation();
+		    double maxOre=rc.senseOre(maxOreLoc);
 		    boolean mineAtCurrentLoc=true;
 		    for (MapLocation m: MapLocation.getAllMapLocationsWithinRadiusSq(maxOreLoc, RobotType.BEAVER.sensorRadiusSquared)){
-		        double oreAtM=myController.senseOre(m);
+		        double oreAtM=rc.senseOre(m);
 		        if(oreAtM>maxOre){
 		            maxOre=oreAtM;
 		            maxOreLoc=m;
@@ -129,27 +106,27 @@ public class BeaverLogic extends RobotLogic{
 		    }
 		    //Mines at currentLocation if 
 		    if (mineAtCurrentLoc){
-		        if (myController.isCoreReady() && myController.canMine()){
-		            myController.mine();
+		        if (rc.isCoreReady() && rc.canMine()){
+		            rc.mine();
 		            int fate = rand.nextInt(100);
 		            if(fate<25){
 		            	mining = true;
 		            }
 		            //mining = true;
-		            myController.yield();
+		            rc.yield();
 		        }
 		    } else{
-		        Direction move=myController.getLocation().directionTo(maxOreLoc);
-		        if (myController.isCoreReady() && myController.canMove(move))
-		            myController.move(myController.getLocation().directionTo(maxOreLoc));
-		        	myController.yield();
+		        Direction move=rc.getLocation().directionTo(maxOreLoc);
+		        if (rc.isCoreReady() && rc.canMove(move))
+		            rc.move(rc.getLocation().directionTo(maxOreLoc));
+		        	rc.yield();
 		    }
 		} else {
-			 if (myController.isCoreReady() && myController.canMine()){
-		            myController.mine();
-		            myController.yield();
+			 if (rc.isCoreReady() && rc.canMine()){
+		            rc.mine();
+		            rc.yield();
 			 }
-			 if(myController.senseOre(myController.getLocation())<1){
+			 if(rc.senseOre(rc.getLocation())<1){
 				 mining = false;
 			 }
 		}

@@ -6,7 +6,7 @@ public class RobotPlayer {
 	/*
 	 * Run at the start of each unit's existence.
 	 */
-	public static void run(RobotController controller)
+	public static void run(RobotController controller) throws GameActionException
 	{
 		
 		/*
@@ -17,7 +17,7 @@ public class RobotPlayer {
 		/*
 		 * Initialize logic to suppress error.
 		 */
-		RobotLogic myLogic = new RobotLogic();
+		RobotLogic myLogic = new RobotLogic(controller);
 		
 		/*
 		 * Initialize logic based on unit type.

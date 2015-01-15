@@ -10,33 +10,29 @@ import battlecode.common.Team;
 
 public class SoldierLogic extends RobotLogic {
 
-	private RobotController myController;
 	private int myRange;
-	private Team enemyTeam;
 	private Random rand;
 	private MapLocation attTarget;
 	
     public SoldierLogic(RobotController controller) {
-        super();
-        myController = controller;
-        myRange = myController.getType().attackRadiusSquared;
-		enemyTeam = myController.getTeam().opponent();
-		rand = new Random(myController.getID());
+        super(controller);
+        myRange = rc.getType().attackRadiusSquared;
+		rand = new Random(rc.getID());
     }
     
     public void run(){
-    	attack(myController, myRange, enemyTeam);
+    	attack(myRange);
     	attTarget = getAttTarget();
 		move(attTarget);
-		roam(myController, rand);
+		roam(rand);
     }
     
     public MapLocation getAttTarget(){
 		int msgx;
 		int msgy;
 		try {
-			msgx = myController.readBroadcast(SOLDPORTX);
-			msgy = myController.readBroadcast(SOLDPORTY);
+			msgx = rc.readBroadcast(SOLDPORTX);
+			msgy = rc.readBroadcast(SOLDPORTY);
 		} catch (GameActionException e) {
 			// TODO Auto-generated catch block
 			//e.printStackTrace();
@@ -48,16 +44,16 @@ public class SoldierLogic extends RobotLogic {
 	}
     
 	public void move(MapLocation target){
-		Direction movedir = myController.getLocation().directionTo(target);
-		if(myController.canMove(movedir)){
+		Direction movedir = rc.getLocation().directionTo(target);
+		if(rc.canMove(movedir)){
 			try {
-				myController.move(movedir);
+				rc.move(movedir);
 			} catch (GameActionException e) {
 				// TODO Auto-generated catch block
 				//e.printStackTrace();
 			}
 		} else {
-			roam(myController, rand);
+			roam(rand);
 		}
 	}
 
