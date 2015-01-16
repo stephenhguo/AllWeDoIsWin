@@ -7,17 +7,18 @@ import battlecode.common.*;
 public class BeaverLogic extends RobotLogic{
 
 	private MapLocation attTarget;
-	private boolean mining;
+	private boolean mining, exploring;
 
 	static Direction facing;
 
 	private int myRange;
 	
-	public BeaverLogic(RobotController controller)
+	public BeaverLogic(RobotController controller) throws GameActionException
 	{
 		super(controller);
 		attTarget = rc.getLocation();
 		myRange = rc.getType().attackRadiusSquared;
+		exploring = radio.shouldSearch(RobotType.BEAVER);
 		mining = false;
 	}
 	
@@ -27,12 +28,13 @@ public class BeaverLogic extends RobotLogic{
 		//attack();
 //			MapLocation attTarget = getAttTarget();
 //			move(attTarget);
+		rc.setIndicatorString(1, "Searching: " + exploring);
 		basicSupply();
 		buildNext();
 
 		attack(myRange);
 		moveAndMine();
-		roam();
+		//roam();
 		
 		//attTarget = getAttTarget();
 		//move(attTarget);
@@ -85,8 +87,22 @@ public class BeaverLogic extends RobotLogic{
 	 */
 	public void moveAndMine() throws GameActionException{
 	    //Finds max ore location
+
 		if(!mining){
-		    MapLocation maxOreLoc=rc.getLocation();
+			if (exploring){
+				RobotInfo[] nearby = rc.senseNearbyRobots(24, myTeam);
+				if (nearby.length == 0 && 24 <= rc.getLocation().distanceSquaredTo(rc.senseHQLocation())){
+					exploring = false;
+					goalStrength = 100.;
+				}
+				else{
+					goalStrength = -500.;
+					roam();
+					rc.yield();
+				}
+			}
+
+			MapLocation maxOreLoc=rc.getLocation();
 		    double maxOre=rc.senseOre(maxOreLoc);
 		    boolean mineAtCurrentLoc=true;
 		    for (MapLocation m: MapLocation.getAllMapLocationsWithinRadiusSq(maxOreLoc, RobotType.BEAVER.sensorRadiusSquared)){
@@ -97,7 +113,8 @@ public class BeaverLogic extends RobotLogic{
 		            mineAtCurrentLoc=false;
 		        }
 		    }
-		    //Mines at currentLocation if 
+			
+			    //Mines at currentLocation if 
 		    if (mineAtCurrentLoc){
 		        if (rc.isCoreReady() && rc.canMine()){
 		            rc.mine();
@@ -108,7 +125,9 @@ public class BeaverLogic extends RobotLogic{
 		            //mining = true;
 		            rc.yield();
 		        }
-		    } else{
+		    }
+		
+		    else{
 		        Direction move=rc.getLocation().directionTo(maxOreLoc);
 		        if (rc.isCoreReady() && rc.canMove(move))
 		            goTo(maxOreLoc);

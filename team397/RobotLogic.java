@@ -14,6 +14,7 @@ public class RobotLogic
 	public Team myTeam, enemyTeam;
 	public MapLocation justVisited;
 	public Random rand;
+	public double goalStrength = 100.;
 
 	/* add back in if we want minimap
 	public static final int MMSIZE = 9; // must be odd
@@ -194,6 +195,7 @@ public class RobotLogic
 		MapLocation[] towers = radio.getEnemyTowerLocs();
 		MapLocation myLoc = rc.getLocation();
 		//codes
+		
 		int GOAL = 0, VOID = 1, TOWER = 2, JUSTVISITED = 3;
 		
 		Direction[] options_unedited = Direction.values(), options;
@@ -214,7 +216,7 @@ public class RobotLogic
 		double[] values = new double[counter];
 		
 		if(none != -1)	
-			values[none] = -5.;
+			values[none] = -2.5;
 		
 		counter = 0;
 		for(int i = 0; i < canGo.length; i++){
@@ -230,7 +232,8 @@ public class RobotLogic
 				update(options, values, towers[i], TOWER);
 		}
 		
-		/*We can add this back in if we decide we want walls to be repulsive
+		/*
+		We can add this back in if we decide we want walls to be repulsive
 		MapLocation[] voidSQ = new MapLocation[(int)(MMSIZE*MMSIZE / 2 + 1)]; // get void squares
 		int count = 0;
 		for(int i = 0; i < MMSIZE; i++){
@@ -245,7 +248,8 @@ public class RobotLogic
 		}
 		
 		for(int i = 0; i < count; i++)
-			update(near, voidSQ[i], VOID); //update for void spots  */
+			update(near, voidSQ[i], VOID); //update for void spots  
+			*/
 		
 		if (justVisited != null){
 			update(options, values, justVisited, JUSTVISITED);
@@ -273,7 +277,6 @@ public class RobotLogic
 		int selection = (int)(rand.nextDouble() * possibilities);
 		Direction newDir = options[(int) ((index % Math.pow(10, selection + 1)) / Math.pow(10, selection))];
 		
-		int byte2 = Clock.getBytecodeNum();
 		String str = "";
 		for(int i = 0; i < values.length; i++){
 			str += options[i] +": " + values[i] + ", ";
@@ -282,8 +285,7 @@ public class RobotLogic
 		
 		//System.out.print(byte2 - byte1);
 		
-		return newDir;
-		
+		return newDir;	
 	}
 	
 	public void update(Direction[] options, double[] values, MapLocation other, int code, int rad_sq) // for processing walls, goal
@@ -295,13 +297,13 @@ public class RobotLogic
 			d_sq = other.distanceSquaredTo(rc.getLocation().add(options[i]));
 			switch(code){
 			case 0: //goal
-				val = decay(d_sq, 100., rad_sq); break;
+				val = decayUpTo(d_sq, goalStrength, -30., rad_sq); break;
 			case 1: //void
 				val = step(d_sq, -30., 0); break;
 			case 2: //tower
 				val = step(d_sq, -30., 24); break;
 			case 3: //justvisited
-				val = linear(d_sq, -5, 1); break;
+				val = linear(d_sq, -1, 2); break;
 			default:
 				val = 0;
 			}
@@ -331,26 +333,26 @@ public class RobotLogic
 		update(options, values, other, code, 0);
 	}
 	
-	private double addPotentials(double a, double b){
+	public double addPotentials(double a, double b){
 		return Math.min(Math.max(a,b), Math.max(a+b, Math.min(a,b)));
 	}
 
 	
-	private double linear(int d_sq, double weight, int r_sq){
+	public double linear(int d_sq, double weight, int r_sq){
 		if (d_sq < r_sq)
 			return (double) weight / r_sq * (r_sq - d_sq);
 		else
 			return 0.;
 	}
 	
-	private double step(int d_sq, double weight, int r_sq){
+	public double step(int d_sq, double weight, int r_sq){
 		if (d_sq <= r_sq)
 			return weight;
 		else
 			return 0;
 	}
 	
-	private double decay(int d_sq, double weight, int r_sq){
+	public double decay(int d_sq, double weight, int r_sq){
 		if (d_sq >= r_sq)
 			return weight / (1.+ (d_sq-r_sq));
 		else
@@ -358,22 +360,35 @@ public class RobotLogic
 			
 	}
 	
-	private double decay(int d_sq, double weight){
+	public double decay(int d_sq, double weight){
 		return decay(d_sq, weight, 0);
 	}
 	
-	private double decayUpTo(int d_sq, double w_out, double w_in, int r_sq){
+	public double decayUpTo(int d_sq, double w_out, double w_in, int r_sq){
 		if (d_sq > r_sq)
 			return w_out / (1.+ (d_sq-r_sq));
 		else
 			return w_in;
 	}
 	
-	private double linearUpTo(int d_sq, double w_out, double w_in, int boundary_sq, int r_sq){
+	public double linearUpTo(int d_sq, double w_out, double w_in, int boundary_sq, int r_sq){
 		if (d_sq >= r_sq)
 			return w_out / r_sq * (boundary_sq + r_sq - d_sq);
 		else
 			return w_in;
+	}
+	
+	public double repulsiveCorner(int d_x, int d_y, double weight, int quad, int r_sq){
+		if(quad == 1 && d_x > 0 && d_y > 0)
+			return weight*(r_sq - d_x - d_y);
+		else if(quad == 2 && d_x < 0 && d_y > 0)
+			return weight*(r_sq + d_x - d_y);
+		else if(quad == 3 && d_x < 0 && d_y < 0)
+			return weight*(r_sq + d_x + d_y);
+		else if(quad == 4 && d_x > 0 && d_y < 0)
+			return weight*(r_sq - d_x + d_y);
+		else
+			return 0.;
 	}
 	
 	

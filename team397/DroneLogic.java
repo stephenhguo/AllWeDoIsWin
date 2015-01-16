@@ -18,8 +18,9 @@ public class DroneLogic extends RobotLogic {
 		try {
 			basicSupply();
 			attack(myRange);
-			attTarget = radio.getAttackLoc(RobotType.DRONE);
-			goTo(attTarget);
+			attTarget = radio.getSwarmLoc(RobotType.DRONE);
+			int attRad = radio.getSwarmRadius(RobotType.DRONE);
+			goTo(attTarget, attRad);
 		} catch (Exception e) {
 			e.printStackTrace();
 		}

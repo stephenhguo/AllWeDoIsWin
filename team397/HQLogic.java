@@ -5,19 +5,33 @@ import battlecode.common.*;
 public class HQLogic extends RobotLogic{
 
 	private int myRange;
-	private int beaverNum;
+	private int numBeavers, numDrones, numSoldiers, numTanks, numMiners, numMinerFact;
+	private boolean beaversSearching, minersSearching;
 	//private final int MINEPORT = 1;
 	
 	public HQLogic(RobotController controller) throws GameActionException
 	{
 		super(controller);
 		myRange = rc.getType().attackRadiusSquared;
-		beaverNum=0;
 		
 		MapLocation[] enemyTowers = rc.senseEnemyTowerLocations();
-		MapLocation target = rc.senseEnemyHQLocation();
+		MapLocation target = rc.senseEnemyHQLocation(), myLoc = rc.getLocation();
+		
 		radio.setEnemyTowerLocs(enemyTowers);
 		radio.setEnemyHQLoc(target);
+		int midx = (target.x + myLoc.x) / 2, midy = (target.y + myLoc.y) / 2;
+
+		if(midx == myLoc.x)
+			radio.reportSymmetry(1,midx,midy);
+		else if(midy == myLoc.y)
+			radio.reportSymmetry(-1,midx,midy);
+		else
+			radio.reportSymmetry(0,midx,midy);
+		
+		radio.searchOrders(RobotType.BEAVER, true);
+		radio.searchOrders(RobotType.MINER, true);
+		beaversSearching = true;
+		minersSearching = true;
 	}
 	
 	public void run()
@@ -26,15 +40,48 @@ public class HQLogic extends RobotLogic{
 			attack(myRange);
 			basicSupply();
 			spawn();
+			countBots();
+			if (numBeavers > 5 && beaversSearching)
+				radio.searchOrders(RobotType.BEAVER, false);
 			planAttack();
 		} catch (Exception e) {
 			e.printStackTrace();
 		}
 	}
 	
+	public void countBots(){
+		RobotInfo[] myRobots = rc.senseNearbyRobots(999999, myTeam);
+		numDrones = 0;
+	    numBeavers = 0;
+		numSoldiers = 0;
+		numTanks = 0;
+		numMiners = 0; 
+		numMinerFact = 0;
+		for(RobotInfo inf : myRobots){
+			if(inf.type.equals(RobotType.DRONE)){
+				numDrones++;
+			}
+			if(inf.type.equals(RobotType.BEAVER)){
+				numBeavers++;
+			}
+			if(inf.type.equals(RobotType.SOLDIER)){
+				numSoldiers++;
+			}
+			if(inf.type.equals(RobotType.TANK)){
+				numTanks++;
+			}
+			if(inf.type.equals(RobotType.MINER)){
+				numMiners++;
+			}
+			if(inf.type.equals(RobotType.MINERFACTORY)){
+				numMinerFact++;
+			}
+		}
+	}
+	
 	public void spawn() throws Exception
 	{
-		if(beaverNum>5){
+		if(numBeavers>8){
 			return;
 		}
 		if(rc.isCoreReady())
@@ -52,37 +99,21 @@ public class HQLogic extends RobotLogic{
 	
 	
 	public void planAttack() throws GameActionException{
-		RobotInfo[] myRobots = rc.senseNearbyRobots(999999, myTeam);
-		int numDrones = 0;
-		int numBeaves = 0;
-		int numSold = 0;
-		for(RobotInfo inf : myRobots){
-			if(inf.type.equals(RobotType.DRONE)){
-				numDrones++;
-			}
-			if(inf.type.equals(RobotType.BEAVER)){
-				numBeaves++;
-			}
-			if(inf.type.equals(RobotType.SOLDIER)){
-				numSold++;
-			}
-		}
-		beaverNum = numBeaves;
 		if(numDrones>=20){
-			attackEnemyTower(RobotType.DRONE);
+			swarmEnemyTower(RobotType.DRONE);
 		} else if(numDrones<=3){
 			retreat(RobotType.DRONE);
 		}
-		if(numSold>=15){
-			attackEnemyTower(RobotType.SOLDIER);
-		} else if(numSold<=3){
+		if(numSoldiers>=15){
+			swarmEnemyTower(RobotType.SOLDIER);
+		} else if(numSoldiers<=3){
 			retreat(RobotType.SOLDIER);
 		}
 		
-		attackEnemyTower(RobotType.TANK);
+		swarmEnemyTower(RobotType.TANK);
 	}
 	
-	public void attackEnemyTower(RobotType type) throws GameActionException{
+	public void swarmEnemyTower(RobotType type) throws GameActionException{
 		//broadcast attack target
 		MapLocation[] enemyTowers = rc.senseEnemyTowerLocations();
 		MapLocation target;
@@ -99,13 +130,13 @@ public class HQLogic extends RobotLogic{
 				}
 			}
 		}
-		radio.setAttackLoc(target, type);
+		radio.setSwarm(target, type);
 		radio.setEnemyTowerLocs(enemyTowers);
 	}
 	
 	public void retreat(RobotType type) throws GameActionException{
 		MapLocation target = rc.getLocation();
-		radio.setAttackLoc(target, type);
+		radio.setSwarm(target, type);
 	}
 	
 	public void basicSupply(){
