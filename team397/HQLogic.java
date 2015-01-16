@@ -101,7 +101,7 @@ public class HQLogic extends RobotLogic{
 	public void planAttack() throws GameActionException{
 		if(numDrones>=20){
 			swarmEnemyTower(RobotType.DRONE);
-		} else if(numDrones<=3){
+		} else if(numDrones<=7){
 			retreat(RobotType.DRONE);
 		}
 		if(numSoldiers>=15){

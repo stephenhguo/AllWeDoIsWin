@@ -11,8 +11,8 @@ public class RobotPlayer {
 	static Random rand;
 	static Direction[] directions = {Direction.NORTH, Direction.NORTH_EAST, Direction.EAST, Direction.SOUTH_EAST, Direction.SOUTH, Direction.SOUTH_WEST, Direction.WEST, Direction.NORTH_WEST};
 
-	public static void run(RobotController tomatojuice) {
-		rc = tomatojuice;
+	public static void run(RobotController controller) {
+		rc = controller;
 		rand = new Random(rc.getID());
 
 		myRange = rc.getType().attackRadiusSquared;

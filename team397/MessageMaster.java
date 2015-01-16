@@ -34,23 +34,23 @@ public class MessageMaster {
 		rc = controller;
 	}
 	
-	public void reportSymmetry(int code, int midx, int midy) throws GameActionException{
+	public void reportSymmetry(int code, int midx, int midy) throws GameActionException{ //reports symmetry of the board
 		rc.broadcast(SYMMETRY, code);
 		rc.broadcast(SYMMETRY + 1, midx);
 		rc.broadcast(SYMMETRY + 2, midy);
 	}
 
 	
-	public int checkNextBuild() throws GameActionException{
+	public int checkNextBuild() throws GameActionException{ //what to build next
 		return rc.readBroadcast(NEXTBUILDING);
 	}
 	
-	public void newBuild(int buildCode) throws GameActionException{
+	public void newBuild(int buildCode) throws GameActionException{ //sets what to build, assumes code is understood by robot
 		rc.broadcast(NEXTBUILDING, buildCode);
 		
 	}
 	
-	public void searchOrders(RobotType type, boolean shouldS) throws GameActionException{
+	public void searchOrders(RobotType type, boolean shouldS) throws GameActionException{ //sets type to search, whatever search means for that type
 		int[] channel = typeSwitch(type, SEARCH);
 		int message = 0;
 		if(shouldS)
@@ -58,44 +58,44 @@ public class MessageMaster {
 		rc.broadcast(channel[0], message);
 	}
 	
-	public boolean shouldSearch(RobotType type) throws GameActionException{
+	public boolean shouldSearch(RobotType type) throws GameActionException{ //checks if should be in search mode when instantiated or could be checked throughout
 		int[] channel = typeSwitch(type, SEARCH);
 		return rc.readBroadcast(channel[0]) == 1;
 	}
 
-	public MapLocation getSwarmLoc(RobotType type) throws GameActionException{
+	public MapLocation getSwarmLoc(RobotType type) throws GameActionException{ //gets swarm location
 		int[] channel = typeSwitch(type, SWARM);
 		int x = rc.readBroadcast(channel[0]), y = rc.readBroadcast(channel[1]);
 		return new MapLocation(x,y);
 	}
 	
-	public int getSwarmRadius(RobotType type) throws GameActionException{
+	public int getSwarmRadius(RobotType type) throws GameActionException{ //gets radius_sq of swarm **probably should change name**
 		int[] channel = typeSwitch(type, SWARM);
 		return rc.readBroadcast(channel[2]);
 	}
 	
-	public void setSwarm(MapLocation loc, RobotType type, int rad_sq) throws GameActionException{
+	public void setSwarm(MapLocation loc, RobotType type, int rad_sq) throws GameActionException{ //when HQ sets a swarm
 		int[] channel = typeSwitch(type, SWARM);
 		rc.broadcast(channel[0], loc.x);
 		rc.broadcast(channel[1], loc.y);
 		rc.broadcast(channel[2], rad_sq);
 	}
 	
-	public void setSwarm(MapLocation loc, RobotType type) throws GameActionException{
+	public void setSwarm(MapLocation loc, RobotType type) throws GameActionException{ //overriden method of r_sq = 0
 		setSwarm(loc, type, 0);
 	}
 
 	
-	public void setEnemyHQLoc(MapLocation loc) throws GameActionException{
+	public void setEnemyHQLoc(MapLocation loc) throws GameActionException{ //sets EnemyHQ for all future rounds
 		rc.broadcast(ENEMYHQLOC[0], loc.x);
 		rc.broadcast(ENEMYHQLOC[1], loc.y);
 	}
 	
-	public MapLocation getEnemyHQLoc() throws GameActionException{
+	public MapLocation getEnemyHQLoc() throws GameActionException{ //gets Enemy HQ (10 byte code < 50 bytecode)
 		return new MapLocation(rc.readBroadcast(ENEMYHQLOC[0]), rc.readBroadcast(ENEMYHQLOC[1]));
 	}
 	
-	public void setEnemyTowerLocs(MapLocation[] spots) throws GameActionException{
+	public void setEnemyTowerLocs(MapLocation[] spots) throws GameActionException{ //sets all enemy tower locs in a running list and sets how long list is
 		rc.broadcast(ENEMYTOWERS_NUM, spots.length);
 		for(int i = 0; i < spots.length; i++){
 			rc.broadcast(ENEMYTOWER_LOCS + 2*i, spots[i].x);
@@ -103,7 +103,7 @@ public class MessageMaster {
 		}
 	}
 	
-	public MapLocation[] getEnemyTowerLocs() throws GameActionException{
+	public MapLocation[] getEnemyTowerLocs() throws GameActionException{ //gets enemyTower locs (35 bytecode < 100 bytecode)
 		int num = rc.readBroadcast(ENEMYTOWERS_NUM);
 		MapLocation[] result = new MapLocation[num];
 		for(int i = 0; i < num; i ++){
@@ -112,7 +112,7 @@ public class MessageMaster {
 		return result;
 	}
 	
-	private int[] typeSwitch(RobotType type, int code){
+	private int[] typeSwitch(RobotType type, int code){ //codes are defined with constants above
 		RobotType[] list = {RobotType.HQ, //0
 			  RobotType.TOWER, //1
 			  RobotType.MISSILE,//2
@@ -138,7 +138,7 @@ public class MessageMaster {
 		while (list[typeCode] != type && typeCode < list.length)
 			typeCode++;
 		
-		switch(typeCode){
+		switch(typeCode){ //these should be modified as we expand functionality
 			case 3:
 				if (code == SWARM)
 					return TANKATTACK;
