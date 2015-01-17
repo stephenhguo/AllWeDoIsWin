@@ -1,22 +1,17 @@
 package team397;
 
-import java.util.Random;
-
 import battlecode.common.Direction;
 import battlecode.common.GameActionException;
 import battlecode.common.MapLocation;
 import battlecode.common.RobotController;
 import battlecode.common.RobotType;
-import battlecode.common.Team;
 
 public class SoldierLogic extends RobotLogic {
 
-	private int myRange;
 	private MapLocation attTarget;
 	
     public SoldierLogic(RobotController controller) {
         super(controller);
-        myRange = rc.getType().attackRadiusSquared;
     }
     
     public void run() throws GameActionException{

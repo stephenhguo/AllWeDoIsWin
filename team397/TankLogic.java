@@ -11,12 +11,10 @@ import battlecode.common.Team;
 
 public class TankLogic extends RobotLogic {
 
-	private int myRange;
 	private MapLocation attTarget;
 	
     public TankLogic(RobotController controller) {
         super(controller);
-        myRange = rc.getType().attackRadiusSquared;
     }
     
     public void run() throws GameActionException{

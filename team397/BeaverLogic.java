@@ -10,7 +10,6 @@ public class BeaverLogic extends RobotLogic{
 	public BeaverLogic(RobotController controller) throws GameActionException
 	{
 		super(controller);
-		myRange = rc.getType().attackRadiusSquared;
 		exploring = radio.shouldSearch(RobotType.BEAVER);
 		mining = false;
 	}

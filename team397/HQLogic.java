@@ -4,7 +4,6 @@ import battlecode.common.*;
 
 public class HQLogic extends RobotLogic{
 
-	private int myRange;
 	private int numBeavers, numDrones, numSoldiers, numTanks, numMiners, numMinerFact;
 	private boolean beaversSearching, minersSearching;
 	//private final int MINEPORT = 1;
@@ -12,7 +11,6 @@ public class HQLogic extends RobotLogic{
 	public HQLogic(RobotController controller) throws GameActionException
 	{
 		super(controller);
-		myRange = rc.getType().attackRadiusSquared;
 		
 		MapLocation[] enemyTowers = rc.senseEnemyTowerLocations();
 		MapLocation target = rc.senseEnemyHQLocation(), myLoc = rc.getLocation();

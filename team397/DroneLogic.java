@@ -10,7 +10,6 @@ public class DroneLogic extends RobotLogic {
     public DroneLogic(RobotController controller) {
         super(controller);
         attTarget = rc.getLocation();
-        myRange = rc.getType().attackRadiusSquared;
     }
     
     public void run()
