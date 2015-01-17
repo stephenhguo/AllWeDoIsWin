@@ -15,6 +15,7 @@ public class RobotLogic
 	public MapLocation justVisited;
 	public Random rand;
 	public double goalStrength = 100.;
+	public int myRange;
 
 	/* add back in if we want minimap
 	public static final int MMSIZE = 9; // must be odd
@@ -28,6 +29,7 @@ public class RobotLogic
 		myTeam = rc.getTeam();
 		enemyTeam = myTeam.opponent();
 		rand = new Random(rc.getID());
+		myRange = rc.getType().attackRadiusSquared;
 	}
 	
 	
@@ -56,9 +58,11 @@ public class RobotLogic
 			  RobotType.TECHNOLOGYINSTITUTE,
 			  RobotType.HANDWASHSTATION,
 			  RobotType.COMPUTER};
+	
 	/*
 	 * This method is meant to be overridden for each specific unit logic.
 	 */
+	
 	public void run() throws GameActionException{}
 	
 	public void attack(int myRange){
@@ -193,10 +197,10 @@ public class RobotLogic
 
 		//RobotInfo[] friendBots = rc.senseNearbyRobots(2, myTeam);
 		MapLocation[] towers = radio.getEnemyTowerLocs();
-		MapLocation myLoc = rc.getLocation();
-		//codes
+		MapLocation myLoc = rc.getLocation(), enemyHQ = radio.getEnemyHQLoc();
 		
-		int GOAL = 0, VOID = 1, TOWER = 2, JUSTVISITED = 3;
+		//codes
+		int GOAL = 0, VOID = 1, TOWER = 2, JUSTVISITED = 3, ENEMYHQ = 4;
 		
 		Direction[] options_unedited = Direction.values(), options;
 		boolean[] canGo = new boolean[options_unedited.length];
@@ -232,28 +236,12 @@ public class RobotLogic
 				update(options, values, towers[i], TOWER);
 		}
 		
-		/*
-		We can add this back in if we decide we want walls to be repulsive
-		MapLocation[] voidSQ = new MapLocation[(int)(MMSIZE*MMSIZE / 2 + 1)]; // get void squares
-		int count = 0;
-		for(int i = 0; i < MMSIZE; i++){
-			for(int j = 0; j < MMSIZE; j++)
-			{
-				if (!miniMap[i][j]){
-					voidSQ[count] = locAtIndex(i,j);
-					count++;
-				}
-						
-			}
-		}
-		
-		for(int i = 0; i < count; i++)
-			update(near, voidSQ[i], VOID); //update for void spots  
-			*/
-		
 		if (justVisited != null){
 			update(options, values, justVisited, JUSTVISITED);
 		}
+		
+		if(!enemyHQ.equals(goal))	
+			update(options, values, enemyHQ, ENEMYHQ);
 		
 		if (goal != null)
 				update(options, values, goal, GOAL, goalRadSq); //update for goal
@@ -304,6 +292,8 @@ public class RobotLogic
 				val = step(d_sq, -30., 24); break;
 			case 3: //justvisited
 				val = linear(d_sq, -1, 2); break;
+			case 4: //enemyHQ
+				val = step(d_sq, -50., 24); break;
 			default:
 				val = 0;
 			}
@@ -465,6 +455,25 @@ public class RobotLogic
 		return new MapLocation(myLoc.x + dx, myLoc.y + dy);
 	}
 	*/
+	
+	/*
+	We can add this back into nextMove if we decide we want walls to be repulsive
+	MapLocation[] voidSQ = new MapLocation[(int)(MMSIZE*MMSIZE / 2 + 1)]; // get void squares
+	int count = 0;
+	for(int i = 0; i < MMSIZE; i++){
+		for(int j = 0; j < MMSIZE; j++)
+		{
+			if (!miniMap[i][j]){
+				voidSQ[count] = locAtIndex(i,j);
+				count++;
+			}
+					
+		}
+	}
+	
+	for(int i = 0; i < count; i++)
+		update(near, voidSQ[i], VOID); //update for void spots  
+		*/
 	
 }
 

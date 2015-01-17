@@ -1,22 +1,15 @@
 package team397;
 
-import java.util.Random;
-
 import battlecode.common.*;
 
 public class BeaverLogic extends RobotLogic{
 
-	private MapLocation attTarget;
 	private boolean mining, exploring;
-
-	static Direction facing;
-
 	private int myRange;
 	
 	public BeaverLogic(RobotController controller) throws GameActionException
 	{
 		super(controller);
-		attTarget = rc.getLocation();
 		myRange = rc.getType().attackRadiusSquared;
 		exploring = radio.shouldSearch(RobotType.BEAVER);
 		mining = false;
