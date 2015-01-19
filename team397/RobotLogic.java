@@ -269,7 +269,7 @@ public class RobotLogic
 		for(int i = 0; i < values.length; i++){
 			str += options[i] +": " + values[i] + ", ";
 		}
-		rc.setIndicatorString(0, str);
+		//rc.setIndicatorString(0, str);
 		
 		//System.out.print(byte2 - byte1);
 		

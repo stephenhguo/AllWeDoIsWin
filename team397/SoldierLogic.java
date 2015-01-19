@@ -1,10 +1,13 @@
 package team397;
 
+import java.util.Random;
+
 import battlecode.common.Direction;
 import battlecode.common.GameActionException;
 import battlecode.common.MapLocation;
 import battlecode.common.RobotController;
 import battlecode.common.RobotType;
+import battlecode.common.Team;
 
 public class SoldierLogic extends RobotLogic {
 
@@ -12,6 +15,10 @@ public class SoldierLogic extends RobotLogic {
 	
     public SoldierLogic(RobotController controller) {
         super(controller);
+    }
+    /*
+    public void run(){
+       
     }
     
     public void run() throws GameActionException{
@@ -34,5 +41,5 @@ public class SoldierLogic extends RobotLogic {
 			roam();
 		}
 	}
-
+	*/
 }

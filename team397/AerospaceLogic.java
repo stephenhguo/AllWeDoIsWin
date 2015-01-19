@@ -5,7 +5,7 @@ import battlecode.common.RobotController;
 public class AerospaceLogic extends RobotLogic {
 
     public AerospaceLogic(RobotController controller) {
-        super(controller);
+    	super(controller);
     }
 
 }

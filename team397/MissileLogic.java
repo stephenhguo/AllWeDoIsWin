@@ -5,7 +5,7 @@ import battlecode.common.RobotController;
 public class MissileLogic extends RobotLogic {
 
     public MissileLogic(RobotController controller) {
-        super(controller);
+    	super(controller);
     }
 
 }

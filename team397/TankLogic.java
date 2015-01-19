@@ -16,6 +16,12 @@ public class TankLogic extends RobotLogic {
     public TankLogic(RobotController controller) {
         super(controller);
     }
+    /*
+    public void run(){
+    	attack(myController, myRange, enemyTeam);
+    	attTarget = getAttTarget();
+        myRange = rc.getType().attackRadiusSquared;
+    }
     
     public void run() throws GameActionException{
     	attack(myRange);
@@ -24,7 +30,6 @@ public class TankLogic extends RobotLogic {
 		roam();
     }
     
-
     
 	public void move(MapLocation target) throws GameActionException{
 		Direction movedir = rc.getLocation().directionTo(target);
@@ -39,4 +44,5 @@ public class TankLogic extends RobotLogic {
 			roam();
 		}
 	}
+	*/
 }

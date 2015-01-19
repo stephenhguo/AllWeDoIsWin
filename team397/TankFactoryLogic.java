@@ -21,16 +21,20 @@ public class TankFactoryLogic extends RobotLogic {
     
     public void spawn() throws Exception
 	{
-		if(rc.isCoreReady())
-		{
-			for(Direction direction : Direction.values())
-			{
-				if(rc.canSpawn(direction, RobotType.TANK))
+    	int buildPhase = radio.getBuildPhase();
+    	if(buildPhase==3){
+			if(rc.isCoreReady()){
 				{
-					rc.spawn(direction, RobotType.TANK);
-					return; //Can only spawn once per round
-				}
-			}
-		}
+					for(Direction direction : Direction.values())
+					{
+						if(rc.canSpawn(direction, RobotType.TANK))
+						{
+							rc.spawn(direction, RobotType.TANK);
+							return; //Can only spawn once per round
+						}
+					}
+		    	}
+	    	}
+    	}
 	}
 }

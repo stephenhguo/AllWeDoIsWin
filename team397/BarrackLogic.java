@@ -16,12 +16,13 @@ public class BarrackLogic extends RobotLogic {
     public void run()
 	{
 		try {
-			spawn();
+			//spawn();
 		} catch (Exception e) {
 			e.printStackTrace();
 		}
 	}
     
+    /*
     public void spawn() throws Exception
 	{
     	RobotInfo[] myRobots = rc.senseNearbyRobots(999999, myTeam);
@@ -42,5 +43,5 @@ public class BarrackLogic extends RobotLogic {
 				}
 			}
 		}
-	}
+	}*/
 }

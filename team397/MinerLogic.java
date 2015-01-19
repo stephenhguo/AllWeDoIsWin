@@ -10,14 +10,12 @@ import battlecode.common.RobotType;
 public class MinerLogic extends RobotLogic {
 
 	private boolean mining, exploring;
-	private int myRange;
 	
 	
     public MinerLogic(RobotController controller) throws GameActionException {
     	super(controller);
 		mining = false;
 		exploring = false; //radio.shouldSearch(RobotType.MINER);
-		myRange = rc.getType().attackRadiusSquared;
     }
     
     public void run()
@@ -52,7 +50,7 @@ public class MinerLogic extends RobotLogic {
 				}
 				else{
 					goalStrength = -100.;
-					roam();
+					goTo(rc.senseHQLocation());
 					rc.yield();
 				}
 			}
