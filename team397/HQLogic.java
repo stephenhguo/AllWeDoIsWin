@@ -7,6 +7,7 @@ public class HQLogic extends RobotLogic{
 	private int myRange;
 	private int numBeaver, numDrone, numTank, numMiner, numComm;
 	private int numMinerFact, numHeli, numMIT, numTrainF, numBar, numTankF;
+	private int commandersSpawned;
 	private boolean beaversSearching, minersSearching;
 	//private final int MINEPORT = 1;
 	
@@ -124,6 +125,12 @@ public class HQLogic extends RobotLogic{
 			}
 		}
 		//should this be here?
+		if(buildPhase==2  && CommNum==1){
+			radio.advanceBuildPhase(1);
+		}
+		if(buildPhase==4  && CommNum==1){
+			radio.advanceBuildPhase(-1);
+		}
 		if(buildPhase==3 && CommNum==0){
 			radio.advanceBuildPhase(1);
 		}

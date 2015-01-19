@@ -81,7 +81,7 @@ public class BeaverLogic extends RobotLogic{
 				}
 			}
 			if(TrainFNum<1){
-				if(build(RobotType.TECHNOLOGYINSTITUTE)){
+				if(build(RobotType.TRAININGFIELD)){
 					rc.yield();
 				}
 			}
@@ -93,7 +93,7 @@ public class BeaverLogic extends RobotLogic{
 					rc.yield();
 				}
 			}
-			if(TankFNum<2){
+			if(TankFNum<4){
 				if(build(RobotType.TANKFACTORY)){
 					rc.yield();
 				}
@@ -109,7 +109,7 @@ public class BeaverLogic extends RobotLogic{
 				}
 			}
 			if(TrainFNum<1){
-				if(build(RobotType.TECHNOLOGYINSTITUTE)){
+				if(build(RobotType.TRAININGFIELD)){
 					rc.yield();
 				}
 			}
