@@ -10,8 +10,8 @@ public class MessageMaster {
 	//these are variables for CHANNELS (1 - 65000)
 	public final int[] DRONEATTACK = {0,1,100}; // (x,y)
 	public final int[] SOLDIERATTACK = {3,4,103}; //(x,y)
-	public final int[] TANKATTACK = {5,6,105}; // (x,y)
-	public final int NEXTBUILDING = 2;
+	public final int[] TANKATTACK = {5,6,105}; // (x,y,rad sq)
+	//public final int NEXTBUILDING = 2;
 	public final int ENEMYTOWER_LOCS = 1003; //begins list of enemy tower locations
 	public int ENEMYTOWERS_NUM = 1002;
 	public final int[] ENEMYHQLOC = {1000, 1001};
@@ -19,6 +19,19 @@ public class MessageMaster {
 	public final int[] DRONESEARCH = {52};
 	public final int[] BEAVERSEARCH = {53};
 	public final int[] MINERSEARCH = {54};
+	
+	public final int BUILD_PHASE = 10;
+	public final int BEAVER_COUNT = 11;
+	public final int MINEFACT_COUNT = 12;
+	public final int MINER_COUNT = 13;
+	public final int HELIPAD_COUNT = 14;
+	public final int DRONE_COUNT = 15;
+	public final int MIT_COUNT = 16;
+	public final int TRAINF_COUNT = 17;
+	public final int COMM_COUNT = 18;
+	public final int BAR_COUNT = 19;
+	public final int TANKFAC_COUNT = 20;
+	public final int TANK_COUNT = 21;
 	
 	public final int SYMMETRY = 300; // 301, 302 contain center of map
 	
@@ -41,15 +54,15 @@ public class MessageMaster {
 	}
 
 	
-	public int checkNextBuild() throws GameActionException{ //what to build next
+	/*public int checkNextBuild() throws GameActionException{ //what to build next
 		return rc.readBroadcast(NEXTBUILDING);
 	}
 	
 	public void newBuild(int buildCode) throws GameActionException{ //sets what to build, assumes code is understood by robot
 		rc.broadcast(NEXTBUILDING, buildCode);
 		
-	}
-	
+	}*/
+
 	public void searchOrders(RobotType type, boolean shouldS) throws GameActionException{ //sets type to search, whatever search means for that type
 		int[] channel = typeSwitch(type, SEARCH);
 		int message = 0;
@@ -167,4 +180,84 @@ public class MessageMaster {
 		
 		return new int[0];
 	}
+	
+	/*
+	 * Gets the build phase, defined below:
+	 * 0: headquarters spawns 2 beavers, beaver builds mining factory (triggers phase change)
+	 * 1: mining factory spawns (up to) 30 miners, beavers build helipads, which spawn (30 or equal to number of 
+	 * 		enemies?) drones, when drone number is met, next phase is triggered
+	 * 2: All spawning stops, other than to maintain miner and drone numbers. When resources are sufficient,
+	 * 		beavers build tech institute, training field, and then commander. Commander triggers phase change
+	 * 3: Beavers build barracks (should not spawn anything) and then tank factory, spawn infinite tanks
+	 * 4: If commander dies, stop tank production to save up for new commander, then
+	 * 		return to stage 3
+	 * ***As appropriate, 2 beavers, 30 miners, 30 drones, and 1 commander are maintained, nonstop tanks
+	 */
+	public void initializeBuildPhase() throws GameActionException{
+		rc.broadcast(BUILD_PHASE, 0);
+	}
+	
+	public int getBuildPhase() throws GameActionException{
+		return rc.readBroadcast(BUILD_PHASE);
+	}
+	
+	public void advanceBuildPhase(int adv) throws GameActionException{
+		int curPhase = rc.readBroadcast(BUILD_PHASE);
+		rc.broadcast(BUILD_PHASE, (curPhase+adv));
+	}
+	
+	public void updateCount(RobotType type, int num) throws GameActionException{
+		if(type.equals(RobotType.BEAVER)){
+			rc.broadcast(BEAVER_COUNT, num);
+		} else if (type.equals(RobotType.MINERFACTORY)){
+			rc.broadcast(MINEFACT_COUNT, num);
+		} else if (type.equals(RobotType.MINER)){
+			rc.broadcast(MINER_COUNT, num);
+		} else if (type.equals(RobotType.HELIPAD)){
+			rc.broadcast(HELIPAD_COUNT, num);
+		} else if (type.equals(RobotType.DRONE)){
+			rc.broadcast(DRONE_COUNT, num);
+		} else if (type.equals(RobotType.TECHNOLOGYINSTITUTE)){
+			rc.broadcast(MIT_COUNT, num);
+		} else if (type.equals(RobotType.TRAININGFIELD)){
+			rc.broadcast(TRAINF_COUNT, num);
+		} else if (type.equals(RobotType.COMMANDER)){
+			rc.broadcast(COMM_COUNT, num);
+		} else if (type.equals(RobotType.BARRACKS)){
+			rc.broadcast(BAR_COUNT, num);
+		} else if (type.equals(RobotType.TANKFACTORY)){
+			rc.broadcast(TANKFAC_COUNT, num);
+		} else if (type.equals(RobotType.TANK)){
+			rc.broadcast(TANK_COUNT, num);
+		}
+	}
+	
+	public int readCount(RobotType type) throws GameActionException{
+		if(type.equals(RobotType.BEAVER)){
+			return rc.readBroadcast(BEAVER_COUNT);
+		} else if (type.equals(RobotType.MINERFACTORY)){
+			return rc.readBroadcast(MINEFACT_COUNT);
+		} else if (type.equals(RobotType.MINER)){
+			return rc.readBroadcast(MINER_COUNT);
+		} else if (type.equals(RobotType.HELIPAD)){
+			return rc.readBroadcast(HELIPAD_COUNT);
+		} else if (type.equals(RobotType.DRONE)){
+			return rc.readBroadcast(DRONE_COUNT);
+		} else if (type.equals(RobotType.TECHNOLOGYINSTITUTE)){
+			return rc.readBroadcast(MIT_COUNT);
+		} else if (type.equals(RobotType.TRAININGFIELD)){
+			return rc.readBroadcast(TRAINF_COUNT);
+		} else if (type.equals(RobotType.COMMANDER)){
+			return rc.readBroadcast(COMM_COUNT);
+		} else if (type.equals(RobotType.BARRACKS)){
+			return rc.readBroadcast(BAR_COUNT);
+		} else if (type.equals(RobotType.TANKFACTORY)){
+			return rc.readBroadcast(TANKFAC_COUNT);
+		} else if (type.equals(RobotType.TANK)){
+			return rc.readBroadcast(TANK_COUNT);
+		} else{
+			return 0;
+		}
+	}
+	
 }

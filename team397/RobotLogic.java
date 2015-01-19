@@ -15,6 +15,7 @@ public class RobotLogic
 	public MapLocation justVisited;
 	public Random rand;
 	public double goalStrength = 100.;
+	public int myRange;
 
 	/* add back in if we want minimap
 	public static final int MMSIZE = 9; // must be odd
@@ -28,6 +29,7 @@ public class RobotLogic
 		myTeam = rc.getTeam();
 		enemyTeam = myTeam.opponent();
 		rand = new Random(rc.getID());
+		myRange = rc.getType().attackRadiusSquared;
 	}
 	
 	
@@ -281,7 +283,7 @@ public class RobotLogic
 		for(int i = 0; i < values.length; i++){
 			str += options[i] +": " + values[i] + ", ";
 		}
-		rc.setIndicatorString(0, str);
+		//rc.setIndicatorString(0, str);
 		
 		//System.out.print(byte2 - byte1);
 		

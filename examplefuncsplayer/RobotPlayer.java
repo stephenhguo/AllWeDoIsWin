@@ -4,6 +4,9 @@ import battlecode.common.*;
 import java.util.*;
 
 public class RobotPlayer {
+	
+	static final boolean OPPONENT_ON = false;
+	
 	static RobotController rc;
 	static Team myTeam;
 	static Team enemyTeam;
@@ -30,42 +33,43 @@ public class RobotPlayer {
 				System.out.println("Unexpected exception");
 				e.printStackTrace();
 			}
-
-			if (rc.getType() == RobotType.HQ) {
-				try {
-					int fate = rand.nextInt(10000);
-					myRobots = rc.senseNearbyRobots(999999, myTeam);
-					int numSoldiers = 0;
-					int numBashers = 0;
-					int numBeavers = 0;
-					int numBarracks = 0;
-					for (RobotInfo r : myRobots) {
-						RobotType type = r.type;
-						if (type == RobotType.SOLDIER) {
-							numSoldiers++;
-						} else if (type == RobotType.BASHER) {
-							numBashers++;
-						} else if (type == RobotType.BEAVER) {
-							numBeavers++;
-						} else if (type == RobotType.BARRACKS) {
-							numBarracks++;
+			if(OPPONENT_ON){
+				if (rc.getType() == RobotType.HQ) {
+					try {
+						int fate = rand.nextInt(10000);
+						myRobots = rc.senseNearbyRobots(999999, myTeam);
+						int numSoldiers = 0;
+						int numBashers = 0;
+						int numBeavers = 0;
+						int numBarracks = 0;
+						for (RobotInfo r : myRobots) {
+							RobotType type = r.type;
+							if (type == RobotType.SOLDIER) {
+								numSoldiers++;
+							} else if (type == RobotType.BASHER) {
+								numBashers++;
+							} else if (type == RobotType.BEAVER) {
+								numBeavers++;
+							} else if (type == RobotType.BARRACKS) {
+								numBarracks++;
+							}
 						}
+						rc.broadcast(0, numBeavers);
+						rc.broadcast(1, numSoldiers);
+						rc.broadcast(2, numBashers);
+						rc.broadcast(100, numBarracks);
+	
+						if (rc.isWeaponReady()) {
+							attackSomething();
+						}
+	
+						if (rc.isCoreReady() && rc.getTeamOre() >= 100 && fate < Math.pow(1.2,12-numBeavers)*10000) {
+							trySpawn(directions[rand.nextInt(8)], RobotType.BEAVER);
+						}
+					} catch (Exception e) {
+						System.out.println("HQ Exception");
+						e.printStackTrace();
 					}
-					rc.broadcast(0, numBeavers);
-					rc.broadcast(1, numSoldiers);
-					rc.broadcast(2, numBashers);
-					rc.broadcast(100, numBarracks);
-
-					if (rc.isWeaponReady()) {
-						attackSomething();
-					}
-
-					if (rc.isCoreReady() && rc.getTeamOre() >= 100 && fate < Math.pow(1.2,12-numBeavers)*10000) {
-						trySpawn(directions[rand.nextInt(8)], RobotType.BEAVER);
-					}
-				} catch (Exception e) {
-					System.out.println("HQ Exception");
-					e.printStackTrace();
 				}
 			}
 
@@ -140,26 +144,28 @@ public class RobotPlayer {
 					e.printStackTrace();
 				}
 			}
-
-			if (rc.getType() == RobotType.BARRACKS) {
-				try {
-					int fate = rand.nextInt(10000);
-
-					// get information broadcasted by the HQ
-					int numBeavers = rc.readBroadcast(0);
-					int numSoldiers = rc.readBroadcast(1);
-					int numBashers = rc.readBroadcast(2);
-
-					if (rc.isCoreReady() && rc.getTeamOre() >= 60 && fate < Math.pow(1.2,15-numSoldiers-numBashers+numBeavers)*10000) {
-						if (rc.getTeamOre() > 80 && fate % 2 == 0) {
-							trySpawn(directions[rand.nextInt(8)],RobotType.BASHER);
-						} else {
-							trySpawn(directions[rand.nextInt(8)],RobotType.SOLDIER);
+			
+			if(OPPONENT_ON){
+				if (rc.getType() == RobotType.BARRACKS) {
+					try {
+						int fate = rand.nextInt(10000);
+	
+						// get information broadcasted by the HQ
+						int numBeavers = rc.readBroadcast(0);
+						int numSoldiers = rc.readBroadcast(1);
+						int numBashers = rc.readBroadcast(2);
+	
+						if (rc.isCoreReady() && rc.getTeamOre() >= 60 && fate < Math.pow(1.2,15-numSoldiers-numBashers+numBeavers)*10000) {
+							if (rc.getTeamOre() > 80 && fate % 2 == 0) {
+								trySpawn(directions[rand.nextInt(8)],RobotType.BASHER);
+							} else {
+								trySpawn(directions[rand.nextInt(8)],RobotType.SOLDIER);
+							}
 						}
+					} catch (Exception e) {
+						System.out.println("Barracks Exception");
+						e.printStackTrace();
 					}
-				} catch (Exception e) {
-					System.out.println("Barracks Exception");
-					e.printStackTrace();
 				}
 			}
 			rc.yield();

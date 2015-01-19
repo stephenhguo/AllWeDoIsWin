@@ -20,17 +20,24 @@ public class HelipadLogic extends RobotLogic {
     
     public void spawn() throws Exception
 	{
-		if(rc.isCoreReady())
-		{
-			for(Direction direction : Direction.values())
+    	int buildPhase = radio.getBuildPhase();
+    	int droneNum = radio.readCount(RobotType.DRONE);
+    	if(buildPhase>=1 && buildPhase<4 && droneNum<30){
+			if(rc.isCoreReady())
 			{
-				if(rc.canSpawn(direction, RobotType.DRONE))
+				for(Direction direction : Direction.values())
 				{
-					rc.spawn(direction, RobotType.DRONE);
-					return; //Can only spawn once per round
+					if(rc.canSpawn(direction, RobotType.DRONE))
+					{
+						rc.spawn(direction, RobotType.DRONE);
+						return; //Can only spawn once per round
+					}
 				}
 			}
-		}
+    	}
+    	if(buildPhase==1 && droneNum>=30){
+    		radio.advanceBuildPhase(1);
+    	}
 	}
 
 }

@@ -5,7 +5,8 @@ import battlecode.common.*;
 public class HQLogic extends RobotLogic{
 
 	private int myRange;
-	private int numBeavers, numDrones, numSoldiers, numTanks, numMiners, numMinerFact;
+	private int numBeaver, numDrone, numTank, numMiner, numComm;
+	private int numMinerFact, numHeli, numMIT, numTrainF, numBar, numTankF;
 	private boolean beaversSearching, minersSearching;
 	//private final int MINEPORT = 1;
 	
@@ -32,6 +33,10 @@ public class HQLogic extends RobotLogic{
 		radio.searchOrders(RobotType.MINER, true);
 		beaversSearching = true;
 		minersSearching = true;
+		
+		radio.initializeBuildPhase();
+		
+		numBeaver=numDrone=numTank=numMiner=numComm=numMinerFact=numHeli=numMIT=numTrainF=numBar=numTankF=0;
 	}
 	
 	public void run()
@@ -41,7 +46,7 @@ public class HQLogic extends RobotLogic{
 			basicSupply();
 			spawn();
 			countBots();
-			if (numBeavers > 5 && beaversSearching)
+			if (numBeaver > 5 && beaversSearching)
 				radio.searchOrders(RobotType.BEAVER, false);
 			planAttack();
 		} catch (Exception e) {
@@ -49,42 +54,66 @@ public class HQLogic extends RobotLogic{
 		}
 	}
 	
-	public void countBots(){
+	public void countBots() throws GameActionException{
 		RobotInfo[] myRobots = rc.senseNearbyRobots(999999, myTeam);
-		numDrones = 0;
-	    numBeavers = 0;
-		numSoldiers = 0;
-		numTanks = 0;
-		numMiners = 0; 
-		numMinerFact = 0;
+		int newDroneNum = 0;
+	    int newBeavNum = 0;
+		int newTankNum = 0;
+		int newMinerNum = 0; 
+		int newCommNum = 0;
+		int newMineFacNum = 0;
+		int newHeliNum = 0;
+		int newMITNum = 0;
+		int newTrainFNum = 0;
+		int newBarNum = 0;
+		int newTankFNum = 0;
 		for(RobotInfo inf : myRobots){
 			if(inf.type.equals(RobotType.DRONE)){
-				numDrones++;
-			}
-			if(inf.type.equals(RobotType.BEAVER)){
-				numBeavers++;
-			}
-			if(inf.type.equals(RobotType.SOLDIER)){
-				numSoldiers++;
-			}
-			if(inf.type.equals(RobotType.TANK)){
-				numTanks++;
-			}
-			if(inf.type.equals(RobotType.MINER)){
-				numMiners++;
-			}
-			if(inf.type.equals(RobotType.MINERFACTORY)){
-				numMinerFact++;
+				newDroneNum++;
+			} else if(inf.type.equals(RobotType.BEAVER)){
+				newBeavNum++;
+			} else if(inf.type.equals(RobotType.TANK)){
+				newTankNum++;
+			} else if(inf.type.equals(RobotType.MINER)){
+				newMinerNum++;
+			} else if(inf.type.equals(RobotType.COMMANDER)){
+				newCommNum++;
+			} else if(inf.type.equals(RobotType.MINERFACTORY)){
+				newMineFacNum++;
+			} else if(inf.type.equals(RobotType.HELIPAD)){
+				newHeliNum++;
+			} else if(inf.type.equals(RobotType.TECHNOLOGYINSTITUTE)){
+				newMITNum++;
+			} else if(inf.type.equals(RobotType.TRAININGFIELD)){
+				newTrainFNum++;
+			} else if(inf.type.equals(RobotType.BARRACKS)){
+				newBarNum++;
+			} else if(inf.type.equals(RobotType.TANKFACTORY)){
+				newTankFNum++;
 			}
 		}
+		if(newBeavNum!=numBeaver) radio.updateCount(RobotType.BEAVER, newBeavNum);
+		if(newDroneNum!=numDrone) radio.updateCount(RobotType.DRONE, newDroneNum);
+		if(newMinerNum!=numMiner) radio.updateCount(RobotType.MINER, newMinerNum);
+		if(newTankNum!=numTank) radio.updateCount(RobotType.TANK, newTankNum);
+		if(newCommNum!=numComm) radio.updateCount(RobotType.COMMANDER, newCommNum);
+		if(newMineFacNum!=numMinerFact) radio.updateCount(RobotType.MINERFACTORY, newMineFacNum);
+		if(newHeliNum!=numHeli) radio.updateCount(RobotType.HELIPAD, newHeliNum);
+		if(newMITNum!=numMIT) radio.updateCount(RobotType.TECHNOLOGYINSTITUTE, newMITNum);
+		rc.setIndicatorString(2, Integer.toString(newMITNum));
+		if(newTrainFNum!=numTrainF) radio.updateCount(RobotType.TRAININGFIELD, newTrainFNum);
+		if(newBarNum!=numBar) radio.updateCount(RobotType.BARRACKS, newBarNum);
+		if(newTankFNum!=numTankF) radio.updateCount(RobotType.TANKFACTORY, newTankFNum);
 	}
 	
 	public void spawn() throws Exception
 	{
-		if(numBeavers>8){
-			return;
-		}
-		if(rc.isCoreReady())
+		int buildPhase = radio.getBuildPhase();
+		rc.setIndicatorString(0, Integer.toString(buildPhase));
+		rc.setIndicatorString(1, Integer.toString(radio.readCount(RobotType.TECHNOLOGYINSTITUTE)));
+		int CommNum = radio.readCount(RobotType.COMMANDER);
+		int beaverNum = radio.readCount(RobotType.BEAVER);
+		if(beaverNum<2 && rc.isCoreReady())
 		{
 			for(Direction direction : Direction.values())
 			{
@@ -95,21 +124,19 @@ public class HQLogic extends RobotLogic{
 				}
 			}
 		}
+		//should this be here?
+		if(buildPhase==3 && CommNum==0){
+			radio.advanceBuildPhase(1);
+		}
 	}
 	
 	
 	public void planAttack() throws GameActionException{
-		if(numDrones>=20){
+		if(numDrone>=35){
 			swarmEnemyTower(RobotType.DRONE);
-		} else if(numDrones<=7){
+		} else if(numDrone<=7){
 			retreat(RobotType.DRONE);
-		}
-		if(numSoldiers>=15){
-			swarmEnemyTower(RobotType.SOLDIER);
-		} else if(numSoldiers<=3){
-			retreat(RobotType.SOLDIER);
-		}
-		
+		}		
 		swarmEnemyTower(RobotType.TANK);
 	}
 	
@@ -130,7 +157,8 @@ public class HQLogic extends RobotLogic{
 				}
 			}
 		}
-		radio.setSwarm(target, type);
+		//radio.setSwarm(target, type);
+		radio.setSwarm(radio.getEnemyHQLoc(), type);
 		radio.setEnemyTowerLocs(enemyTowers);
 	}
 	

@@ -9,7 +9,7 @@ public class TankFactoryLogic extends RobotLogic {
 	private RobotController myController;
 	
     public TankFactoryLogic(RobotController controller) {
-        super();
+        super(controller);
         myController = controller;
     }
     
@@ -24,16 +24,19 @@ public class TankFactoryLogic extends RobotLogic {
     
     public void spawn() throws Exception
 	{
-		if(myController.isCoreReady())
-		{
-			for(Direction direction : Direction.values())
+    	int buildPhase = radio.getBuildPhase();
+    	if(buildPhase==3){
+			if(myController.isCoreReady())
 			{
-				if(myController.canSpawn(direction, RobotType.TANK))
+				for(Direction direction : Direction.values())
 				{
-					myController.spawn(direction, RobotType.TANK);
-					return; //Can only spawn once per round
+					if(myController.canSpawn(direction, RobotType.TANK))
+					{
+						myController.spawn(direction, RobotType.TANK);
+						return; //Can only spawn once per round
+					}
 				}
 			}
-		}
+    	}
 	}
 }

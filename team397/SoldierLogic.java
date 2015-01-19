@@ -10,21 +10,17 @@ import battlecode.common.Team;
 
 public class SoldierLogic extends RobotLogic {
 
-	private int myRange;
-	private Random rand;
 	private MapLocation attTarget;
 	
     public SoldierLogic(RobotController controller) {
         super(controller);
-        myRange = rc.getType().attackRadiusSquared;
-		rand = new Random(rc.getID());
     }
-    
+    /*
     public void run(){
     	attack(myRange);
     	attTarget = getAttTarget();
 		move(attTarget);
-		roam(rand);
+		//roam(rand);
     }
     
     public MapLocation getAttTarget(){
@@ -56,5 +52,5 @@ public class SoldierLogic extends RobotLogic {
 			roam(rand);
 		}
 	}
-
+	*/
 }

@@ -10,20 +10,12 @@ import battlecode.common.Team;
 
 public class TankLogic extends RobotLogic {
 
-	private RobotController myController;
-	private int myRange;
-	private Team enemyTeam;
-	private Random rand;
 	private MapLocation attTarget;
 	
     public TankLogic(RobotController controller) {
-        super();
-        myController = controller;
-        myRange = myController.getType().attackRadiusSquared;
-		enemyTeam = myController.getTeam().opponent();
-		rand = new Random(myController.getID());
+        super(controller);
     }
-    
+    /*
     public void run(){
     	attack(myController, myRange, enemyTeam);
     	attTarget = getAttTarget();
@@ -60,4 +52,5 @@ public class TankLogic extends RobotLogic {
 			roam(myController, rand);
 		}
 	}
+	*/
 }

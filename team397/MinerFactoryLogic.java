@@ -25,23 +25,20 @@ public class MinerFactoryLogic extends RobotLogic {
     
     public void spawn() throws Exception
 	{
-    	RobotInfo[] myRobots = rc.senseNearbyRobots(999999, myTeam);
-		int numMine = 0;
-		for(RobotInfo inf : myRobots){
-			if(inf.type.equals(RobotType.MINER)){
-				numMine++;
-			}
-		}
-		if(numMine<31 && rc.isCoreReady())
-		{
-			for(Direction direction : Direction.values())
+    	int buildPhase = radio.getBuildPhase();
+    	int minerNum = radio.readCount(RobotType.MINER);
+    	if(buildPhase>=1 && minerNum<30){
+			if(rc.isCoreReady())
 			{
-				if(rc.canSpawn(direction, RobotType.MINER))
+				for(Direction direction : Direction.values())
 				{
-					rc.spawn(direction, RobotType.MINER);
-					return; //Can only spawn once per round
+					if(rc.canSpawn(direction, RobotType.MINER))
+					{
+						rc.spawn(direction, RobotType.MINER);
+						return; //Can only spawn once per round
+					}
 				}
 			}
-		}
+    	}
 	}
 }

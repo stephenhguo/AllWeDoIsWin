@@ -8,16 +8,12 @@ public class BeaverLogic extends RobotLogic{
 
 	private MapLocation attTarget;
 	private boolean mining, exploring;
-
 	static Direction facing;
-
-	private int myRange;
 	
 	public BeaverLogic(RobotController controller) throws GameActionException
 	{
 		super(controller);
 		attTarget = rc.getLocation();
-		myRange = rc.getType().attackRadiusSquared;
 		exploring = radio.shouldSearch(RobotType.BEAVER);
 		mining = false;
 	}
@@ -28,19 +24,131 @@ public class BeaverLogic extends RobotLogic{
 		//attack();
 //			MapLocation attTarget = getAttTarget();
 //			move(attTarget);
-		rc.setIndicatorString(1, "Searching: " + exploring);
+		//rc.setIndicatorString(1, "Searching: " + exploring);
 		basicSupply();
-		buildNext();
+		//buildNext();
 
 		attack(myRange);
-		moveAndMine();
-		//roam();
+		phaseBuild();
+		//moveAndMine();
+		roam();
 		
 		//attTarget = getAttTarget();
 		//move(attTarget);
 
 	}
 	
+	public void phaseBuild() throws GameActionException{
+		int phase = radio.getBuildPhase();
+		int mineFacNum = radio.readCount(RobotType.MINERFACTORY);
+		int heliNum = radio.readCount(RobotType.HELIPAD);
+		int MITNum = radio.readCount(RobotType.TECHNOLOGYINSTITUTE);
+		int TrainFNum = radio.readCount(RobotType.TRAININGFIELD);
+		int BarNum = radio.readCount(RobotType.BARRACKS);
+		int TankFNum = radio.readCount(RobotType.TANKFACTORY);
+		switch (phase){
+		case 0:
+			if(build(RobotType.MINERFACTORY)){
+				radio.advanceBuildPhase(1);
+				rc.yield();
+			}
+			return;		
+		case 1:
+			if(mineFacNum<1){
+				if(build(RobotType.MINERFACTORY)){
+					rc.yield();
+				}
+			}
+			if(heliNum<2){
+				if(build(RobotType.HELIPAD)){
+					rc.yield();
+				}
+			}
+			return;
+		case 2:
+			if(mineFacNum<1){
+				if(build(RobotType.MINERFACTORY)){
+					rc.yield();
+				}
+			}
+			if(heliNum<2){
+				if(build(RobotType.HELIPAD)){
+					rc.yield();
+				}
+			}
+			rc.setIndicatorString(1, "Outside "+MITNum);
+			if(MITNum<1){
+				rc.setIndicatorString(0, "Inside "+radio.readCount(RobotType.DRONE));
+				if(build(RobotType.TECHNOLOGYINSTITUTE)){
+					rc.yield();
+				}
+			}
+			if(TrainFNum<1){
+				if(build(RobotType.TECHNOLOGYINSTITUTE)){
+					rc.yield();
+				}
+			}
+			return;
+		case 3:
+		case 4:
+			if(BarNum<1){
+				if(build(RobotType.BARRACKS)){
+					rc.yield();
+				}
+			}
+			if(TankFNum<2){
+				if(build(RobotType.TANKFACTORY)){
+					rc.yield();
+				}
+			}
+			if(mineFacNum<1){
+				if(build(RobotType.MINERFACTORY)){
+					rc.yield();
+				}
+			}
+			if(MITNum<1){
+				if(build(RobotType.TECHNOLOGYINSTITUTE)){
+					rc.yield();
+				}
+			}
+			if(TrainFNum<1){
+				if(build(RobotType.TECHNOLOGYINSTITUTE)){
+					rc.yield();
+				}
+			}
+			if(heliNum<2){
+				if(build(RobotType.HELIPAD)){
+					rc.yield();
+				}
+			}
+			return;
+		default:
+			return;
+		}
+	}
+	
+	public boolean build(RobotType type) throws GameActionException{
+		if(!rc.isCoreReady()){
+			return false;
+		}
+		boolean canBuild = false;
+		if(rc.hasBuildRequirements(type)){
+			Direction builddir = Direction.NORTH;
+			for(Direction dir : Direction.values()){
+				if(rc.canBuild(dir, type)){
+					builddir = dir;
+					canBuild = true;
+					break;
+				}
+			}
+			if(canBuild){
+				rc.build(builddir, type);
+			}
+		}
+		return canBuild;
+	}
+	
+	/*
 	public void buildNext() throws GameActionException{
 		if(!rc.isCoreReady()){
 			return;
@@ -65,7 +173,7 @@ public class BeaverLogic extends RobotLogic{
 				rc.yield();
 			}
 		}
-	}
+	}*/
 	
 	public void move(MapLocation target) throws GameActionException{
 		Direction movedir = rc.getLocation().directionTo(target);
