@@ -100,7 +100,6 @@ public class HQLogic extends RobotLogic{
 		if(newMineFacNum!=numMinerFact) radio.updateCount(RobotType.MINERFACTORY, newMineFacNum);
 		if(newHeliNum!=numHeli) radio.updateCount(RobotType.HELIPAD, newHeliNum);
 		if(newMITNum!=numMIT) radio.updateCount(RobotType.TECHNOLOGYINSTITUTE, newMITNum);
-		rc.setIndicatorString(2, Integer.toString(newMITNum));
 		if(newTrainFNum!=numTrainF) radio.updateCount(RobotType.TRAININGFIELD, newTrainFNum);
 		if(newBarNum!=numBar) radio.updateCount(RobotType.BARRACKS, newBarNum);
 		if(newTankFNum!=numTankF) radio.updateCount(RobotType.TANKFACTORY, newTankFNum);

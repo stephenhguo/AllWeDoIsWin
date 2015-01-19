@@ -6,11 +6,8 @@ import battlecode.common.RobotType;
 
 public class TankFactoryLogic extends RobotLogic {
 
-	private RobotController myController;
-	
     public TankFactoryLogic(RobotController controller) {
-        super(controller);
-        myController = controller;
+    	super(controller);
     }
     
     public void run()
@@ -26,17 +23,17 @@ public class TankFactoryLogic extends RobotLogic {
 	{
     	int buildPhase = radio.getBuildPhase();
     	if(buildPhase==3){
-			if(myController.isCoreReady())
+		if(rc.isCoreReady())
 			{
 				for(Direction direction : Direction.values())
 				{
-					if(myController.canSpawn(direction, RobotType.TANK))
+					if(rc.canSpawn(direction, RobotType.TANK))
 					{
-						myController.spawn(direction, RobotType.TANK);
+						rc.spawn(direction, RobotType.TANK);
 						return; //Can only spawn once per round
 					}
 				}
-			}
+	    	}
     	}
 	}
 }
