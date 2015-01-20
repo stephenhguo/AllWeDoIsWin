@@ -23,7 +23,7 @@ public class TankLogic extends RobotLogic {
 		commanderLoc = radio.getSwarmLoc(RobotType.TANK);
 		int radius = radio.getSwarmRadius(RobotType.TANK);
 		PFObject[] objects;
-		if (radius >= 0){
+		/*if (radius >= 0){
 			objects = new PFObject[1];
 			objects[0] = new SurroundObject(commanderLoc, 30., -30., 4);
 		}
@@ -32,9 +32,10 @@ public class TankLogic extends RobotLogic {
 			PFObject[] base = {new SurroundObject(commanderLoc, 0), new LineObject(commanderLoc, new MapLocation(-1,-1), 2, -80)};
 			objects = combine(objects, base);
 		}
-		else
+		else{
 			objects = avoidEnemyTowersAndHQ();
-			
+		}*/
+		objects = new PFObject[0];
 		makeNextMove(objects);
 
     }

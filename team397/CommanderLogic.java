@@ -1,9 +1,6 @@
 package team397;
 
-import battlecode.common.GameActionException;
-import battlecode.common.MapLocation;
-import battlecode.common.RobotController;
-import battlecode.common.RobotType;
+import battlecode.common.*;
 
 public class CommanderLogic extends RobotLogic {
 
@@ -27,7 +24,29 @@ public class CommanderLogic extends RobotLogic {
 		}
 		else
 			objects = avoidEnemyTowersAndHQ(attTarget);
-    	goTo(radio.getEnemyHQLoc());
+		if(rc.getHealth()<70){
+			goTo(rc.senseHQLocation());
+		} else if(rc.getHealth()>120){
+			goTo(radio.getEnemyHQLoc());
+		}
+    	flashIfDying();
+    }
+    
+    public void flashIfDying() throws GameActionException{
+    	double health = rc.getHealth();
+    	if(health<70.0 && rc.getFlashCooldown()==0){
+    		MapLocation self = rc.getLocation();
+    		Direction toHQ = self.directionTo(rc.senseHQLocation());
+    		MapLocation teleportLoc = self.add(toHQ, 10);
+    		int dist = 9;
+    		while(rc.isLocationOccupied(teleportLoc) && dist>0){
+    			teleportLoc = self.add(toHQ, dist);
+    			dist--;
+    		}
+    		if(dist!=0){
+    			rc.castFlash(teleportLoc);
+    		}
+    	}
     }
 
 }
