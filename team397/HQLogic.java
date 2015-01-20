@@ -138,12 +138,21 @@ public class HQLogic extends RobotLogic{
 	
 	
 	public void planAttack() throws GameActionException{
-		if(numDrone>=35){
+		if(numDrone>=10){
 			swarmEnemyTower(RobotType.DRONE);
 		} else if(numDrone<=7){
 			retreat(RobotType.DRONE);
-		}		
-		swarmEnemyTower(RobotType.TANK);
+		}
+		
+		if (numComm == 0)
+			radio.setSwarm(rc.getLocation(), RobotType.TANK, -1);
+		else
+			swarmEnemyTower(RobotType.TANK);
+		
+		if (numTank >= 10)
+			swarmEnemyTower(RobotType.COMMANDER);
+		else
+			retreat(RobotType.COMMANDER);
 	}
 	
 	public void swarmEnemyTower(RobotType type) throws GameActionException{
@@ -164,7 +173,7 @@ public class HQLogic extends RobotLogic{
 			}
 		}
 		//radio.setSwarm(target, type);
-		radio.setSwarm(radio.getEnemyHQLoc(), type);
+		radio.setSwarm(radio.getEnemyHQLoc(), type, 0);
 		radio.setEnemyTowerLocs(enemyTowers);
 	}
 	

@@ -72,7 +72,7 @@ public class MinerLogic extends RobotLogic {
 		        if (rc.isCoreReady() && rc.canMine()){
 		            rc.mine();
 		            int fate = rand.nextInt(100);
-		            if(fate<25){
+		            if(fate<85){
 		            	mining = true;
 		            }
 		            //mining = true;

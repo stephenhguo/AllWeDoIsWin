@@ -11,6 +11,7 @@ public class MessageMaster {
 	public final int[] DRONEATTACK = {0,1,100}; // (x,y)
 	public final int[] SOLDIERATTACK = {3,4,103}; //(x,y)
 	public final int[] TANKATTACK = {5,6,105}; // (x,y,rad sq)
+	public final int[] COMMATTACK = {150, 151, 152};
 	//public final int NEXTBUILDING = 2;
 	public final int ENEMYTOWER_LOCS = 1003; //begins list of enemy tower locations
 	public int ENEMYTOWERS_NUM = 1002;
@@ -155,6 +156,10 @@ public class MessageMaster {
 			case 3:
 				if (code == SWARM)
 					return TANKATTACK;
+				break;
+			case 4:
+				if (code == SWARM)
+					return COMMATTACK;
 				break;
 			case 5:
 				if (code == SWARM)

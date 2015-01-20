@@ -27,7 +27,9 @@ public class BeaverLogic extends RobotLogic{
 		attack(myRange);
 		phaseBuild();
 		//moveAndMine();
-		roam();
+		MapLocation myHQ = rc.senseHQLocation();
+		PFObject[] stayNear = {new SurroundObject(myHQ, 5, 5, 144), new LinearObject(myHQ, -5, 9)};
+		roam(stayNear);
 		
 		//attTarget = getAttTarget();
 		//move(attTarget);
