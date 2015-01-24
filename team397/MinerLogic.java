@@ -43,14 +43,14 @@ public class MinerLogic extends RobotLogic {
 
 		if(!mining){
 			if (exploring){
-				RobotInfo[] nearby = rc.senseNearbyRobots(38, myTeam);
+				RobotInfo[] nearby = rc.senseNearbyRobots(2, myTeam);
 				if (nearby.length == 0){
 					exploring = false;
 					goalStrength = 100.;
 				}
 				else{
 					goalStrength = -100.;
-					goTo(rc.senseHQLocation());
+					simpleGoal(rc.senseHQLocation());
 					rc.yield();
 				}
 			}
@@ -83,7 +83,7 @@ public class MinerLogic extends RobotLogic {
 		    else{
 		        Direction move=rc.getLocation().directionTo(maxOreLoc);
 		        if (rc.isCoreReady() && rc.canMove(move))
-		            goTo(maxOreLoc);
+		            simpleGoal(maxOreLoc);
 		        	rc.yield();
 		    }
 		} else {

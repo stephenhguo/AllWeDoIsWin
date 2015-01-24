@@ -89,7 +89,50 @@ public class RobotLogic
 			//e.printStackTrace();
 		}
 	}
+/* Traub's supply. Not very good because they don't pass to each other.	
+	public void basicSupply() throws GameActionException{ //distributes to farther away
+		int d_sq_from_HQ = rc.senseHQLocation().distanceSquaredTo(rc.getLocation());
+		double wantedSupp = supplyFunction(d_sq_from_HQ)*(rc.getType().supplyUpkeep + 5);
+		if (rc.getType() == RobotType.HQ)
+			wantedSupp = 0;
+		rc.setIndicatorString(1, "Wanted supply: " + wantedSupp);
+		if(rc.getSupplyLevel() < wantedSupp)
+			return;
+		else{
+			RobotInfo[] myRobots = rc.senseNearbyRobots(GameConstants.SUPPLY_TRANSFER_RADIUS_SQUARED, myTeam);
+			rc.setIndicatorString(5, "Sensed robots: " + (myRobots.length));
+			if (myRobots.length == 0)
+				return;
+			RobotInfo rob = myRobots[0];
+			double maxSupply = 0, other_want, other_diff;
+			
+			for(RobotInfo inf : myRobots){
+				if(inf.health >= 20){
+					other_want = supplyFunction(rc.senseHQLocation().distanceSquaredTo(inf.location)) * (inf.type.supplyUpkeep + 5);
+					other_diff = other_want - inf.supplyLevel;
+					if(other_want > wantedSupp && other_diff > 0){
+						other_diff = Math.min(other_diff, other_want - wantedSupp);
+						if(other_diff > maxSupply){
+							maxSupply = other_diff;
+							rob = inf;
+						}
+					}
+				}
+			}
+			
+			MapLocation giveTo = rc.senseRobot(rob.ID).location;
+			if(maxSupply<rc.getSupplyLevel() && rc.senseRobotAtLocation(giveTo).equals(rob) && giveTo.distanceSquaredTo(rc.getLocation()) <= GameConstants.SUPPLY_TRANSFER_RADIUS_SQUARED){
+				rc.transferSupplies((int)(maxSupply), giveTo);
+			}
+		}
+		
+	}
 	
+	private double supplyFunction(int d_sq){
+		return Math.pow(d_sq / 50., .7) + 1;
+	}
+*/
+
 	public void basicSupply() throws GameActionException{
 		RobotInfo[] myRobots = rc.senseNearbyRobots(GameConstants.SUPPLY_TRANSFER_RADIUS_SQUARED, myTeam);
 		double minSupply = 2000.0;
@@ -110,47 +153,119 @@ public class RobotLogic
 		}
 	}
 	
+	/***********************************************
+	 * Movement functions
+	 ***********************************************/
+
+	//Uses very little bytecode
+	public void basicRandomWalk(){
+
+		if(!rc.isCoreReady()){
+			return;
+		}
+		int dir = rand.nextInt(8);
+		rc.setIndicatorString(0, Double.toString(rc.getHealth()));
+		Direction movedir;
+		switch(dir){
+		case 0:
+			movedir = Direction.NORTH;
+			break;
+		case 1:
+			movedir = Direction.NORTH_EAST;
+			break;
+		case 2:
+			movedir = Direction.EAST;
+			break;
+		case 3:
+			movedir = Direction.SOUTH_EAST;
+			break;
+		case 4:
+			movedir = Direction.SOUTH;
+			break;
+		case 5:
+			movedir = Direction.SOUTH_WEST;
+			break;
+		case 6:
+			movedir = Direction.WEST;
+			break;
+		case 7:
+			movedir = Direction.NORTH_WEST;
+			break;
+		default:
+			movedir=Direction.NORTH;
+		}
+		if(rc.canMove(movedir)){
+			try {
+				justVisited = rc.getLocation();
+				rc.move(movedir);
+			} catch (GameActionException e) {
+				// TODO Auto-generated catch block
+				//e.printStackTrace();
+			}
+		}
+	}
+	
+	//Uses more bytecode, but is still random walk
 	public void roam() throws GameActionException{
-		goTo();
+		goTo(true, null, 0, 0, 0);
 	}
 	
-	public void goTo() throws GameActionException{
-		goTo(null, 0);
+	//basic, avoids enemy towers
+	public void simpleGoal(MapLocation goal, int goalRadSq) throws GameActionException{
+		goTo(true, goal, goalRadSq);
 	}
 	
-	public void goTo(MapLocation goal) throws GameActionException{
-		goTo(goal, 0);
+	public void simpleGoal(MapLocation goal) throws GameActionException{
+		simpleGoal(goal, 0);
 	}
 	
-	public void goTo(MapLocation goal, int goalRadSq) throws GameActionException{
+	//so we can turn off avoidEnTowers
+	public void goAttack(boolean avoidEnTowers, MapLocation goal, int goalRadSq) throws GameActionException{
+		goTo(avoidEnTowers, goal, goalRadSq);
+	}
+	
+	public void moveAwayFrom(MapLocation goal) throws GameActionException{
+		goTo(true, goal, 0, -1*goalStrength, 0);
+	}
+	
+	//would be good for miners or patrol drones
+	public void moveToArea(MapLocation goal, int goalRadSq) throws GameActionException{
+		goTo(true, goal, goalRadSq, goalStrength, goalStrength);
+	}
+
+	
+	//the most general moveMethod, everything else should call this if it uses potential
+	public void goTo(boolean avoidEnTowers, MapLocation goal, int goalRadSq, double w_out, double w_in) throws GameActionException{
 		
 		if(!rc.isCoreReady()){
 			return;
 		}
 		
-		Direction newDir = nextMove(goal, goalRadSq);
+		Direction newDir = nextMove(avoidEnTowers, goal, goalRadSq, w_out, w_in);
 		justVisited = rc.getLocation();
 		if(rc.canMove(newDir)){
 			rc.move(newDir);
 		}
 	}
 	
-	public Direction nextMove() throws GameActionException{
-		return nextMove(null, 0);
+	public void goTo(boolean avoidEnTowers, MapLocation goal, int goalRadSq) throws GameActionException{
+		goTo(avoidEnTowers, goal, goalRadSq, goalStrength, 0);
 	}
 	
-	public Direction nextMove(MapLocation goal, int goalRadSq) throws GameActionException{
+	/***********************************************
+	 * NextMove and its Update functions
+	 ***********************************************/
 	
-		//RobotInfo[] enemyBots = rc.senseNearbyRobots(5, myTeam.opponent());
-		int byte1 = Clock.getBytecodeNum();
+	//Does heavy lifting of picking next spot to move
+	public Direction nextMove(boolean avoidEnTowers, MapLocation goal, int goalRadSq, double w_out, double w_in) throws GameActionException{
+	
 
-		//RobotInfo[] friendBots = rc.senseNearbyRobots(2, myTeam);
-		MapLocation[] towers = radio.getEnemyTowerLocs();
-		MapLocation myLoc = rc.getLocation(), enemyHQ = radio.getEnemyHQLoc();
+		MapLocation myLoc = rc.getLocation();
 		
-		//codes
-		int GOAL = 0, VOID = 1, TOWER = 2, JUSTVISITED = 3, ENEMYHQ = 4;
+		//codes for update function
+		int VOID = 1, TOWER = 2, JUSTVISITED = 3, ENEMYHQ = 4;
 		
+		//This block just builds up the options and values variables, blocking out void and occupied spaces
 		Direction[] options_unedited = Direction.values(), options;
 		boolean[] canGo = new boolean[options_unedited.length];
 		int counter = 0, none = -1;
@@ -179,23 +294,28 @@ public class RobotLogic
 			}
 		}
 		
-		
-		for(int i = 0; i < towers.length; i++){ //update for towers
-			if (!towers[i].equals(goal))
-				update(options, values, towers[i], TOWER);
+		//Avoids enemy towers if wanted
+		if (avoidEnTowers){
+			MapLocation[] towers = radio.getEnemyTowerLocs();
+			MapLocation enemyHQ = radio.getEnemyHQLoc();
+			for(int i = 0; i < towers.length; i++){ //update for towers
+				if (!towers[i].equals(goal))
+					update(options, values, towers[i], TOWER);
+			}
+			if(!enemyHQ.equals(goal))	
+				update(options, values, enemyHQ, ENEMYHQ);
 		}
 		
+		//Makes repulsive just was square
 		if (justVisited != null){
 			update(options, values, justVisited, JUSTVISITED);
 		}
 		
-		if(!enemyHQ.equals(goal))	
-			update(options, values, enemyHQ, ENEMYHQ);
-		
+		//updates for goal using special goalUpdate method
 		if (goal != null)
-				update(options, values, goal, GOAL, goalRadSq); //update for goal
+				goalUpdate(options, values, goal, goalRadSq, w_out, w_in); //update for goal
 		
-		
+		//Picks directions with max potential
 		int index = 0, count = 0;
 		double maxVal = -1000;
 		for(int i = 0; i < values.length; i++){
@@ -210,31 +330,41 @@ public class RobotLogic
 			}
 		}
 		
+		//randomly picks one of these max valued directions
 		int possibilities = (int) Math.log10(index) + 1;
 		int selection = (int)(rand.nextDouble() * possibilities);
 		Direction newDir = options[(int) ((index % Math.pow(10, selection + 1)) / Math.pow(10, selection))];
 		
+		//sets indicator string
 		String str = "";
 		for(int i = 0; i < values.length; i++){
 			str += options[i] +": " + values[i] + ", ";
 		}
-		//rc.setIndicatorString(0, str);
-		
-		//System.out.print(byte2 - byte1);
+
 		
 		return newDir;	
 	}
 	
-	public void update(Direction[] options, double[] values, MapLocation other, int code, int rad_sq) // for processing walls, goal
+	public Direction nextMove(boolean avoidEnTowers, MapLocation goal) throws GameActionException{
+		return nextMove(true, goal, 0, goalStrength, 0.);
+	}
+	
+	public Direction nextMove(boolean avoidEnTowers, MapLocation goal, double weight) throws GameActionException{
+		return nextMove(true, goal, 0, weight, 0.);
+	}
+	
+	public Direction nextMove() throws GameActionException{
+		return nextMove(true, null);
+	}
+	
+	// for processing walls, towers, enemyHQ, and justVisited
+	public void update(Direction[] options, double[] values, MapLocation other, int code, int rad_sq)
 	{
-		//finish, use switch inside for loop
 		int d_sq;
 		double val;
 		for(int i = 0; i < options.length; i++){
 			d_sq = other.distanceSquaredTo(rc.getLocation().add(options[i]));
 			switch(code){
-			case 0: //goal
-				val = decayUpTo(d_sq, goalStrength, -30., rad_sq); break;
 			case 1: //void
 				val = step(d_sq, -30., 0); break;
 			case 2: //tower
@@ -249,6 +379,24 @@ public class RobotLogic
 			values[i] = addPotentials(values[i], val); 
 			
 		}
+	}
+	
+	public void goalUpdate(Direction[] options, double[] values, MapLocation gLoc, int r_sq, double w_out, double w_in){ // for processing goal
+		int d_sq;
+		double val;
+		for(int i = 0; i < options.length; i++){
+			d_sq = gLoc.distanceSquaredTo(rc.getLocation().add(options[i]));
+			val = decayUpTo(d_sq, w_out, w_in, r_sq);
+			values[i] = addPotentials(values[i], val); 
+		}
+	}
+	
+	public void goalUpdate(Direction[] options, double[] values, MapLocation gLoc, int r_sq){
+		goalUpdate(options, values, gLoc, r_sq, goalStrength, -1*goalStrength);
+	}
+	
+	public void goalUpdate(Direction[] options, double[] values, MapLocation gLoc){
+		goalUpdate(options, values, gLoc, 0);
 	}
 	
 	
@@ -271,6 +419,11 @@ public class RobotLogic
 	public void update(Direction[] options, double[] values, MapLocation other, int code){
 		update(options, values, other, code, 0);
 	}
+	
+	/***********************************************
+	 * Potential functions
+	 ***********************************************/
+	
 	
 	public double addPotentials(double a, double b){
 		return Math.min(Math.max(a,b), Math.max(a+b, Math.min(a,b)));

@@ -25,10 +25,10 @@ public class DroneLogic extends RobotLogic {
 				stalk(huntTarget);
 			}
 			if(!hunting){
-				goTo(rc.senseEnemyHQLocation(),RobotType.HQ.attackRadiusSquared);
+				simpleGoal(rc.senseEnemyHQLocation(),RobotType.HQ.attackRadiusSquared);
 				//attTarget = radio.getSwarmLoc(RobotType.DRONE);
 				//int attRad = radio.getSwarmRadius(RobotType.DRONE);
-				//goTo(attTarget, attRad);
+				//simpleGoal(attTarget, attRad);
 			}
 		} catch (Exception e) {
 			e.printStackTrace();
@@ -71,7 +71,7 @@ public class DroneLogic extends RobotLogic {
     			rc.attackLocation(inf.location);
     			rc.yield();
     		} else{
-    			goTo(inf.location);
+    			simpleGoal(inf.location);
     		}
     	}
     }
