@@ -16,7 +16,7 @@ public class TankLogic extends RobotLogic {
     public TankLogic(RobotController controller) {
         super(controller);
     }
-    
+
     public void run() throws GameActionException{
     	basicSupply();
 		attack(myRange);
@@ -24,34 +24,22 @@ public class TankLogic extends RobotLogic {
 		int radius = radio.getSwarmRadius(RobotType.TANK);
     }
 
-    /*
-    public void run(){
-    	attack(myController, myRange, enemyTeam);
-    	attTarget = getAttTarget();
-        myRange = rc.getType().attackRadiusSquared;
-    }
-    
-    public void run() throws GameActionException{
-    	attack(myRange);
-    	attTarget = radio.getSwarmLoc(RobotType.TANK);
-		move(attTarget);
-		roam();
-    }
-    
-
-    
-	public void move(MapLocation target) throws GameActionException{
-		Direction movedir = rc.getLocation().directionTo(target);
-		if(rc.canMove(movedir)){
-			try {
-				rc.move(movedir);
-			} catch (GameActionException e) {
-				// TODO Auto-generated catch block
-				//e.printStackTrace();
-			}
-		} else {
-			roam();
-		}
-	}
-	*/
+//    /*
+//    public void run(){
+//    	attack(myController, myRange, enemyTeam);
+//    	attTarget = getAttTarget();
+//        myRange = rc.getType().attackRadiusSquared;
+//    }
+//=======
+//>>>>>>> ebbaca9afb2fa3344737eaabca6d32efdb525265
+//    
+//    public void run() throws GameActionException{
+//    	attack(myRange);
+//		attTarget = radio.getSwarmLoc(RobotType.TANK);
+//		int attRad = radio.getSwarmRadius(RobotType.TANK);
+//		if (attTarget.equals(rc.senseHQLocation()))
+//			simpleGoal(attTarget, attRad);
+//		else
+//			goAttack(false, attTarget, attRad);
+//    }
 }

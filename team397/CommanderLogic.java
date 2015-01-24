@@ -1,7 +1,6 @@
 package team397;
 
 
-
 import battlecode.common.Direction;
 import battlecode.common.GameActionException;
 import battlecode.common.MapLocation;
@@ -18,18 +17,18 @@ public class CommanderLogic extends RobotLogic {
 
     }
     
-    public void run() throws GameActionException{
-    	radio.setSwarm(rc.getLocation(), RobotType.TANK); //Tells Tanks to swarm with this Commander
-		attack(myRange);
-		MapLocation attTarget = radio.getSwarmLoc(RobotType.COMMANDER);
-		//int attRad = radio.getSwarmRadius(RobotType.COMMANDER);
-		if(rc.getHealth()<70){
-			simpleGoal(rc.senseHQLocation());
-		} else if(rc.getHealth()>120){
-			goAttack(true,radio.getEnemyHQLoc(),0);
-		}
-    	flashIfDying();
-    }
+//    public void run() throws GameActionException{
+//    	radio.setSwarm(rc.getLocation(), RobotType.TANK); //Tells Tanks to swarm with this Commander
+//		attack(myRange);
+//		MapLocation attTarget = radio.getSwarmLoc(RobotType.COMMANDER);
+//		//int attRad = radio.getSwarmRadius(RobotType.COMMANDER);
+//		if(rc.getHealth()<70){
+//			simpleGoal(rc.senseHQLocation());
+//		} else if(rc.getHealth()>120){
+//			goAttack(true,radio.getEnemyHQLoc(),0);
+//		}
+//    	flashIfDying();
+//    }
     
     public void flashIfDying() throws GameActionException{
     	double health = rc.getHealth();
@@ -49,4 +48,13 @@ public class CommanderLogic extends RobotLogic {
 
     }
 
+    public void run() throws GameActionException{
+    	attack(myRange);
+		MapLocation attTarget = radio.getSwarmLoc(RobotType.TANK);
+		int attRad = radio.getSwarmRadius(RobotType.TANK);
+		if (attTarget.equals(rc.senseHQLocation()))
+			simpleGoal(attTarget, attRad);
+		else
+			goAttack(false, attTarget, attRad);
+    }
 }

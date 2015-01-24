@@ -36,6 +36,7 @@ public class HQLogic extends RobotLogic{
 		minersSearching = true;
 		
 		retreat(RobotType.DRONE);
+		radio.setHunterSwitch(radio.HUNT_TEAM);
 		
 		radio.initializeBuildPhase();
 		
@@ -138,23 +139,31 @@ public class HQLogic extends RobotLogic{
 	
 	public void manageTeams() throws GameActionException{
 		// droneTeams = radio.ATTACK_TEAM, radio.HUNT_TEAM, radio.SUPPLY_TEAM
-		int minAttackSize = 20, minHuntSize = 5, minSupplySize = 0;
+		int minAttackSize = 25, minHuntSize = 0, minSupplySize = 0;
 		int attackSize, huntSize, supplySize;
 		
 		attackSize = radio.getAttendance(RobotType.DRONE, radio.ATTACK_TEAM);
 		radio.resetAttendance(RobotType.DRONE, radio.ATTACK_TEAM);
-		radio.setWanted(RobotType.DRONE, radio.ATTACK_TEAM, Math.max(minAttackSize - attackSize, 0));
 		
 		huntSize = radio.getAttendance(RobotType.DRONE, radio.HUNT_TEAM);
 		radio.resetAttendance(RobotType.DRONE, radio.HUNT_TEAM);
-		radio.setWanted(RobotType.DRONE, radio.HUNT_TEAM, Math.max(minHuntSize - huntSize, 0));
-		System.out.println("" + Math.max(minHuntSize - huntSize, 0));
+		
 		
 		supplySize = radio.getAttendance(RobotType.DRONE, radio.SUPPLY_TEAM);
 		radio.resetAttendance(RobotType.DRONE, radio.SUPPLY_TEAM);
+		
+		//if(numDrone - (attackSize + huntSize + supplySize) >= 5)
+		//	minHuntSize = 5;
+		if(numDrone - (huntSize + supplySize) > 15)
+			minHuntSize = 0;
+		else
+			radio.setHunterSwitch(radio.HUNT_TEAM);
+		
+		radio.setWanted(RobotType.DRONE, radio.ATTACK_TEAM, Math.max(minAttackSize - attackSize, 0));
+		radio.setWanted(RobotType.DRONE, radio.HUNT_TEAM, Math.max(minHuntSize - huntSize, 0));
 		radio.setWanted(RobotType.DRONE, radio.SUPPLY_TEAM, Math.max(minSupplySize - supplySize, 0));
 		
-		numDrone = attackSize;
+		numDrone = numDrone - (huntSize + supplySize);
 		rc.setIndicatorString(0, "Number of attack drones:" + attackSize);
 		rc.setIndicatorString(1, "Number of hunt drones:" + huntSize);
 		//System.out.println("" + attackSize + ", " + huntSize);
@@ -192,11 +201,12 @@ public class HQLogic extends RobotLogic{
 	
 	public void planAttack() throws GameActionException{
 		//swarmEnemyTower(RobotType.DRONE);
-		if(numDrone>=20){
+		if(numDrone>=25){
 			swarmEnemyTower(RobotType.DRONE);
 		} else if(numDrone<=7){
 			retreat(RobotType.DRONE);
-		}		
+		}	
+		swarmEnemyTower(RobotType.TANK);
 	}
 	
 	public void swarmEnemyTower(RobotType type) throws GameActionException{
@@ -217,6 +227,8 @@ public class HQLogic extends RobotLogic{
 				}
 			}
 		}
+		if (type.equals(RobotType.DRONE))
+			radio.setHunterSwitch(radio.ATTACK_TEAM);
 		radio.setSwarm(target, type);
 		//radio.setSwarm(radio.getEnemyHQLoc(), type);
 		radio.setEnemyTowerLocs(enemyTowers);

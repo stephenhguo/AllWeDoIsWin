@@ -22,7 +22,7 @@ public class HelipadLogic extends RobotLogic {
 	{
     	int buildPhase = radio.getBuildPhase();
     	int droneNum = radio.readCount(RobotType.DRONE);
-    	if(buildPhase>=1 /*&& buildPhase<4*/ && droneNum<30){
+    	if(buildPhase>=1 /*&& buildPhase<4*/ && droneNum<25){
 			if(rc.isCoreReady())
 			{
 				for(Direction direction : Direction.values())

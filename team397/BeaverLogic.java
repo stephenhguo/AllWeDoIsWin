@@ -51,7 +51,7 @@ public class BeaverLogic extends RobotLogic{
 			}
 			return;		
 		case 1:
-			if(mineFacNum<1){
+			if(mineFacNum<2){
 				if(build(RobotType.MINERFACTORY)){
 					rc.yield();
 				}
@@ -63,25 +63,29 @@ public class BeaverLogic extends RobotLogic{
 			}
 			return;
 		case 2:
-			if(mineFacNum<1){
+			if(mineFacNum<2){
 				if(build(RobotType.MINERFACTORY)){
 					rc.yield();
 				}
 			}
-			if(heliNum<2){
+			if(heliNum<3){
 				if(build(RobotType.HELIPAD)){
 					rc.yield();
 				}
 			}
-			rc.setIndicatorString(1, "Outside "+MITNum);
+			
 			if(MITNum<1){
-				rc.setIndicatorString(0, "Inside "+radio.readCount(RobotType.DRONE));
 				if(build(RobotType.TECHNOLOGYINSTITUTE)){
 					rc.yield();
 				}
 			}
 			if(TrainFNum<1){
 				if(build(RobotType.TRAININGFIELD)){
+					rc.yield();
+				}
+			}
+			if(TankFNum<2){
+				if(build(RobotType.TANKFACTORY)){
 					rc.yield();
 				}
 			}
@@ -93,11 +97,6 @@ public class BeaverLogic extends RobotLogic{
 					rc.yield();
 				}
 			}
-			if(TankFNum<4){
-				if(build(RobotType.TANKFACTORY)){
-					rc.yield();
-				}
-			}
 			if(mineFacNum<1){
 				if(build(RobotType.MINERFACTORY)){
 					rc.yield();
@@ -115,6 +114,11 @@ public class BeaverLogic extends RobotLogic{
 			}
 			if(heliNum<2){
 				if(build(RobotType.HELIPAD)){
+					rc.yield();
+				}
+			}
+			if(TankFNum<10){
+				if(build(RobotType.TANKFACTORY)){
 					rc.yield();
 				}
 			}
