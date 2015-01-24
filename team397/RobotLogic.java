@@ -164,7 +164,7 @@ public class RobotLogic
 			return;
 		}
 		int dir = rand.nextInt(8);
-		rc.setIndicatorString(0, Double.toString(rc.getHealth()));
+		//rc.setIndicatorString(0, Double.toString(rc.getHealth()));
 		Direction movedir;
 		switch(dir){
 		case 0:

@@ -7,18 +7,40 @@ public class DroneLogic extends RobotLogic {
 	private MapLocation attTarget;
 	boolean hunting;
 	RobotInfo huntTarget;
+	private int team;
 	
 	
-    public DroneLogic(RobotController controller) {
+    public DroneLogic(RobotController controller) throws GameActionException {
         super(controller);
         attTarget = rc.getLocation();
+        team = radio.checkJobs(RobotType.DRONE);
     }
     
-    public void run()
+    public void run() throws GameActionException
 	{
-		try {
-			basicSupply();
-<<<<<<< HEAD
+		
+		if(team == -1)
+			team = radio.checkJobs(RobotType.DRONE);
+		if(team != -1)
+			radio.incAttendance(RobotType.DRONE, team);
+		
+		rc.setIndicatorString(1, "Team: " + team);
+		
+		basicSupply();
+		
+		if(team == radio.HUNT_TEAM){
+			hunt();
+			if(hunting){
+				stalk(huntTarget);
+			}
+			if(!hunting){
+				moveToArea(rc.senseEnemyHQLocation(),225);
+				//attTarget = radio.getSwarmLoc(RobotType.DRONE);
+				//int attRad = radio.getSwarmRadius(RobotType.DRONE);
+				//simpleGoal(attTarget, attRad);
+			}
+		}
+		else{
 			attack(myRange);
 			attTarget = radio.getSwarmLoc(RobotType.DRONE);
 			int attRad = radio.getSwarmRadius(RobotType.DRONE);
@@ -26,22 +48,6 @@ public class DroneLogic extends RobotLogic {
 				simpleGoal(attTarget, attRad);
 			else
 				goAttack(false, attTarget, attRad);
-=======
-			//roam();
-			hunt();
-			//attack(myRange);
-			if(hunting){
-				stalk(huntTarget);
-			}
-			if(!hunting){
-				simpleGoal(rc.senseEnemyHQLocation(),RobotType.HQ.attackRadiusSquared);
-				//attTarget = radio.getSwarmLoc(RobotType.DRONE);
-				//int attRad = radio.getSwarmRadius(RobotType.DRONE);
-				//simpleGoal(attTarget, attRad);
-			}
->>>>>>> 42fedeba2a20beb52f5bc128f58b1184e5d1dab0
-		} catch (Exception e) {
-			e.printStackTrace();
 		}
 	}
 
