@@ -18,7 +18,10 @@ public class DroneLogic extends RobotLogic {
 			attack(myRange);
 			attTarget = radio.getSwarmLoc(RobotType.DRONE);
 			int attRad = radio.getSwarmRadius(RobotType.DRONE);
-			goTo(attTarget, attRad);
+			if (attTarget.equals(rc.senseHQLocation()))
+				simpleGoal(attTarget, attRad);
+			else
+				goAttack(false, attTarget, attRad);
 		} catch (Exception e) {
 			e.printStackTrace();
 		}

@@ -28,7 +28,7 @@ public class BeaverLogic extends RobotLogic{
 		attack(myRange);
 		phaseBuild();
 		//moveAndMine();
-		roam();
+		moveToArea(rc.senseHQLocation(), 81);
 		
 		//attTarget = getAttTarget();
 		//move(attTarget);
@@ -235,7 +235,7 @@ public class BeaverLogic extends RobotLogic{
 		    else{
 		        Direction move=rc.getLocation().directionTo(maxOreLoc);
 		        if (rc.isCoreReady() && rc.canMove(move))
-		            goTo(maxOreLoc);
+		            simpleGoal(maxOreLoc);
 		        	rc.yield();
 		    }
 		} else {

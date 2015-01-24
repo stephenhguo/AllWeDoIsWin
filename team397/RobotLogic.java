@@ -307,9 +307,9 @@ public class RobotLogic
 		}
 		
 		//Makes repulsive just was square
-		if (justVisited != null){
-			update(options, values, justVisited, JUSTVISITED);
-		}
+		//if (justVisited != null){
+		//	update(options, values, justVisited, JUSTVISITED);
+		//}
 		
 		//updates for goal using special goalUpdate method
 		if (goal != null)

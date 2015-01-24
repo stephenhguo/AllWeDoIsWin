@@ -22,7 +22,6 @@ public class MinerLogic extends RobotLogic {
 	{
 		rc.setIndicatorString(1, "Searching: " + exploring);
 		try {
-			emergencyRoam();
 			basicSupply();
 			attack(myRange);
 			moveAndMine();
@@ -50,7 +49,7 @@ public class MinerLogic extends RobotLogic {
 				}
 				else{
 					goalStrength = -100.;
-					goTo(rc.senseHQLocation());
+					simpleGoal(rc.senseHQLocation());
 					rc.yield();
 				}
 			}
@@ -83,7 +82,7 @@ public class MinerLogic extends RobotLogic {
 		    else{
 		        Direction move=rc.getLocation().directionTo(maxOreLoc);
 		        if (rc.isCoreReady() && rc.canMove(move))
-		            goTo(maxOreLoc);
+		            moveToArea(maxOreLoc, 25);
 		        	rc.yield();
 		    }
 		} else {
