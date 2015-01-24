@@ -170,12 +170,12 @@ public class HQLogic extends RobotLogic{
 	
 	
 	public void planAttack() throws GameActionException{
+		//swarmEnemyTower(RobotType.DRONE);
 		if(numDrone>=20){
-			swarmEnemyTower(RobotType.DRONE);
+			swarmEnemyTower(RobotType.TANK);
 		} else if(numDrone<=7){
-			retreat(RobotType.DRONE);
+			retreat(RobotType.TANK);
 		}		
-		swarmEnemyTower(RobotType.TANK);
 	}
 	
 	public void swarmEnemyTower(RobotType type) throws GameActionException{

@@ -82,7 +82,9 @@ public class MinerLogic extends RobotLogic {
 		    else{
 		        Direction move=rc.getLocation().directionTo(maxOreLoc);
 		        if (rc.isCoreReady() && rc.canMove(move))
+
 		            moveToArea(maxOreLoc, 25);
+
 		        	rc.yield();
 		    }
 		} else {
