@@ -33,6 +33,8 @@ public class MessageMaster {
 	private final int TANKFAC_COUNT = 20;
 	private final int TANK_COUNT = 21;
 	
+	private final int HUNTERS_SWITCH = 111;
+	
 	private final int SYMMETRY = 300; // 301, 302 contain center of map
 	
 	//internal codes
@@ -169,6 +171,14 @@ public class MessageMaster {
 	public void resetAttendance(RobotType type, int team) throws GameActionException{
 		int[] channels = typeSwitch(type, team);
 		rc.broadcast(channels[1], 0);
+	}
+	
+	public void setHunterSwitch(int newTeam) throws GameActionException{
+		rc.broadcast(HUNTERS_SWITCH, newTeam);
+	}
+	
+	public int shouldHunterSwitch() throws GameActionException{
+		return rc.readBroadcast(HUNTERS_SWITCH);
 	}
 	
 	private int[] typeSwitch(RobotType type, int code){ //codes are defined with constants above

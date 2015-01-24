@@ -21,6 +21,8 @@ public class DroneLogic extends RobotLogic {
 		
 		if(team == -1)
 			team = radio.checkJobs(RobotType.DRONE);
+		if(team == radio.HUNT_TEAM)
+			team = radio.shouldHunterSwitch();
 		if(team != -1)
 			radio.incAttendance(RobotType.DRONE, team);
 		
@@ -30,7 +32,7 @@ public class DroneLogic extends RobotLogic {
 		
 		if(team == radio.HUNT_TEAM){
 			attack(myRange);
-			moveToArea(rc.senseEnemyHQLocation(),170);
+			moveToArea(rc.senseEnemyHQLocation(),225);
 			/*hunt();
 			if(hunting){
 				stalk(huntTarget);
