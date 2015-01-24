@@ -38,26 +38,26 @@ public class RobotLogic
 	 */
 	
 	public RobotType[] attackPreference = {RobotType.HQ, 
-			  RobotType.TOWER, 
-			  RobotType.MISSILE,
-			  RobotType.TANK,
-			  RobotType.COMMANDER,
-			  RobotType.DRONE,
-			  RobotType.LAUNCHER,
-			  RobotType.BASHER,
-			  RobotType.SOLDIER,
-			  RobotType.BEAVER,
-			  RobotType.MINER,
-			  RobotType.AEROSPACELAB,
-			  RobotType.TANKFACTORY,
-			  RobotType.TRAININGFIELD,
-			  RobotType.HELIPAD,
-			  RobotType.BARRACKS,
-			  RobotType.MINERFACTORY,
-			  RobotType.SUPPLYDEPOT,
-			  RobotType.TECHNOLOGYINSTITUTE,
-			  RobotType.HANDWASHSTATION,
-			  RobotType.COMPUTER};
+			RobotType.HELIPAD,
+			RobotType.TANKFACTORY,
+			RobotType.AEROSPACELAB,
+			RobotType.MINERFACTORY,
+			RobotType.TRAININGFIELD,
+			RobotType.BARRACKS,
+			RobotType.TOWER, 
+			RobotType.MISSILE,
+			RobotType.TANK,
+			RobotType.COMMANDER,
+			RobotType.DRONE,
+			RobotType.LAUNCHER,
+			RobotType.BASHER,
+			RobotType.SOLDIER,
+			RobotType.BEAVER,
+			RobotType.MINER,
+			RobotType.SUPPLYDEPOT,
+			RobotType.TECHNOLOGYINSTITUTE,
+			RobotType.HANDWASHSTATION,
+			RobotType.COMPUTER};
 	
 	/*
 	 * This method is meant to be overridden for each specific unit logic.
@@ -109,57 +109,6 @@ public class RobotLogic
 
 		}
 	}
-	//old roam
-/*
-	public void roam(){
-
-		if(!rc.isCoreReady()){
-			return;
-		}
-		int dir = rand.nextInt(8);
-		rc.setIndicatorString(0, Double.toString(rc.getHealth()));
-		Direction movedir;
-		switch(dir){
-		case 0:
-			movedir = Direction.NORTH;
-			break;
-		case 1:
-			movedir = Direction.NORTH_EAST;
-			break;
-		case 2:
-			movedir = Direction.EAST;
-			break;
-		case 3:
-			movedir = Direction.SOUTH_EAST;
-			break;
-		case 4:
-			movedir = Direction.SOUTH;
-			break;
-		case 5:
-			movedir = Direction.SOUTH_WEST;
-			break;
-		case 6:
-			movedir = Direction.WEST;
-			break;
-		case 7:
-			movedir = Direction.NORTH_WEST;
-			break;
-		default:
-			movedir=Direction.NORTH;
-		}
-		if(rc.canMove(movedir)){
-			try {
-				justVisited = rc.getLocation();
-				rc.move(movedir);
-			} catch (GameActionException e) {
-				// TODO Auto-generated catch block
-				//e.printStackTrace();
-			}
-		}
-	}
-*/
-
-	//new roam
 	
 	public void roam() throws GameActionException{
 		goTo();
