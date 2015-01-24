@@ -5,7 +5,7 @@ import java.util.*;
 
 public class RobotPlayer {
 	
-	static final boolean OPPONENT_ON = false;
+	static final boolean OPPONENT_ON = true;
 	
 	static RobotController rc;
 	static Team myTeam;

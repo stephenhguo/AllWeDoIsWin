@@ -4,7 +4,6 @@ import battlecode.common.*;
 
 public class HQLogic extends RobotLogic{
 
-
 	private int myRange;
 	private int numBeaver, numDrone, numTank, numMiner, numComm;
 	private int numMinerFact, numHeli, numMIT, numTrainF, numBar, numTankF;
@@ -15,6 +14,7 @@ public class HQLogic extends RobotLogic{
 	public HQLogic(RobotController controller) throws GameActionException
 	{
 		super(controller);
+		myRange = rc.getType().attackRadiusSquared;
 		
 		MapLocation[] enemyTowers = rc.senseEnemyTowerLocations();
 		MapLocation target = rc.senseEnemyHQLocation(), myLoc = rc.getLocation();
@@ -93,24 +93,56 @@ public class HQLogic extends RobotLogic{
 				newTankFNum++;
 			}
 		}
-		if(newBeavNum!=numBeaver) radio.updateCount(RobotType.BEAVER, newBeavNum);
-		if(newDroneNum!=numDrone) radio.updateCount(RobotType.DRONE, newDroneNum);
-		if(newMinerNum!=numMiner) radio.updateCount(RobotType.MINER, newMinerNum);
-		if(newTankNum!=numTank) radio.updateCount(RobotType.TANK, newTankNum);
-		if(newCommNum!=numComm) radio.updateCount(RobotType.COMMANDER, newCommNum);
-		if(newMineFacNum!=numMinerFact) radio.updateCount(RobotType.MINERFACTORY, newMineFacNum);
-		if(newHeliNum!=numHeli) radio.updateCount(RobotType.HELIPAD, newHeliNum);
-		if(newMITNum!=numMIT) radio.updateCount(RobotType.TECHNOLOGYINSTITUTE, newMITNum);
-		if(newTrainFNum!=numTrainF) radio.updateCount(RobotType.TRAININGFIELD, newTrainFNum);
-		if(newBarNum!=numBar) radio.updateCount(RobotType.BARRACKS, newBarNum);
-		if(newTankFNum!=numTankF) radio.updateCount(RobotType.TANKFACTORY, newTankFNum);
+		if(newBeavNum!=numBeaver){
+			radio.updateCount(RobotType.BEAVER, newBeavNum);
+			numBeaver=newBeavNum;
+		}
+		if(newDroneNum!=numDrone){
+			radio.updateCount(RobotType.DRONE, newDroneNum);
+			numDrone=newDroneNum;
+		}
+		if(newMinerNum!=numMiner){
+			radio.updateCount(RobotType.MINER, newMinerNum);
+			numMiner=newMinerNum;
+		}
+		if(newTankNum!=numTank){
+			radio.updateCount(RobotType.TANK, newTankNum);
+			numTank=newTankNum;
+		}
+		if(newCommNum!=numComm){
+			radio.updateCount(RobotType.COMMANDER, newCommNum);
+			numComm=newCommNum;
+		}
+		if(newMineFacNum!=numMinerFact){
+			radio.updateCount(RobotType.MINERFACTORY, newMineFacNum);
+			numMinerFact=newMineFacNum;
+		}
+		if(newHeliNum!=numHeli){
+			radio.updateCount(RobotType.HELIPAD, newHeliNum);
+			numHeli=newHeliNum;
+		}
+		if(newMITNum!=numMIT){
+			radio.updateCount(RobotType.TECHNOLOGYINSTITUTE, newMITNum);
+			numMIT=newMITNum;
+		}
+		if(newTrainFNum!=numTrainF){
+			radio.updateCount(RobotType.TRAININGFIELD, newTrainFNum);
+			numTrainF = newTrainFNum;
+		}
+		if(newBarNum!=numBar){
+			radio.updateCount(RobotType.BARRACKS, newBarNum);
+			numBar = newBarNum;
+		}
+		if(newTankFNum!=numTankF){
+			radio.updateCount(RobotType.TANKFACTORY, newTankFNum);
+			numTankF = newTankFNum;
+		}
 	}
 	
 	public void spawn() throws Exception
 	{
 		int buildPhase = radio.getBuildPhase();
 		rc.setIndicatorString(0, Integer.toString(buildPhase));
-		rc.setIndicatorString(1, Integer.toString(radio.readCount(RobotType.TECHNOLOGYINSTITUTE)));
 		int CommNum = radio.readCount(RobotType.COMMANDER);
 		int beaverNum = radio.readCount(RobotType.BEAVER);
 		if(beaverNum<2 && rc.isCoreReady())
@@ -138,24 +170,16 @@ public class HQLogic extends RobotLogic{
 	
 	
 	public void planAttack() throws GameActionException{
-		if(numDrone>=10){
+		if(numDrone>=20){
 			swarmEnemyTower(RobotType.DRONE);
 		} else if(numDrone<=7){
 			retreat(RobotType.DRONE);
-		}
-		
-		if (numComm == 0)
-			radio.setSwarm(rc.getLocation(), RobotType.TANK, -1);
-		else
-			swarmEnemyTower(RobotType.TANK);
-		
-		if (numTank >= 10)
-			swarmEnemyTower(RobotType.COMMANDER);
-		else
-			retreat(RobotType.COMMANDER);
+		}		
+		swarmEnemyTower(RobotType.TANK);
 	}
 	
 	public void swarmEnemyTower(RobotType type) throws GameActionException{
+		
 		//broadcast attack target
 		MapLocation[] enemyTowers = rc.senseEnemyTowerLocations();
 		MapLocation target;
@@ -172,8 +196,8 @@ public class HQLogic extends RobotLogic{
 				}
 			}
 		}
-		//radio.setSwarm(target, type);
-		radio.setSwarm(radio.getEnemyHQLoc(), type, 0);
+		radio.setSwarm(target, type);
+		//radio.setSwarm(radio.getEnemyHQLoc(), type);
 		radio.setEnemyTowerLocs(enemyTowers);
 	}
 	

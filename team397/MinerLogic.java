@@ -43,7 +43,7 @@ public class MinerLogic extends RobotLogic {
 
 		if(!mining){
 			if (exploring){
-				RobotInfo[] nearby = rc.senseNearbyRobots(38, myTeam);
+				RobotInfo[] nearby = rc.senseNearbyRobots(2, myTeam);
 				if (nearby.length == 0){
 					exploring = false;
 					goalStrength = 100.;
@@ -72,7 +72,7 @@ public class MinerLogic extends RobotLogic {
 		        if (rc.isCoreReady() && rc.canMine()){
 		            rc.mine();
 		            int fate = rand.nextInt(100);
-		            if(fate<85){
+		            if(fate<25){
 		            	mining = true;
 		            }
 		            //mining = true;

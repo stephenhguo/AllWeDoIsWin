@@ -18,16 +18,7 @@ public class DroneLogic extends RobotLogic {
 			attack(myRange);
 			attTarget = radio.getSwarmLoc(RobotType.DRONE);
 			int attRad = radio.getSwarmRadius(RobotType.DRONE);
-			PFObject[] objects;
-			if (attTarget.equals(rc.senseHQLocation())){
-				objects = avoidEnemyTowersAndHQ();
-				PFObject[] base = {new SurroundObject(attTarget, 0), new LineObject(attTarget, new MapLocation(-1,-1), 2, -80)};
-				objects = combine(objects, base);
-			}
-			else
-				objects = avoidEnemyTowersAndHQ(attTarget);
-				
-			makeNextMove(objects);
+			goTo(attTarget, attRad);
 		} catch (Exception e) {
 			e.printStackTrace();
 		}
