@@ -11,7 +11,7 @@ import battlecode.common.Team;
 
 public class TankLogic extends RobotLogic {
 
-	private MapLocation commanderLoc;
+	private MapLocation attTarget;
 	
     public TankLogic(RobotController controller) {
         super(controller);
@@ -39,6 +39,7 @@ public class TankLogic extends RobotLogic {
 		makeNextMove(objects);
 
     }
+
     /*
     public void run(){
     	attack(myController, myRange, enemyTeam);
@@ -53,6 +54,7 @@ public class TankLogic extends RobotLogic {
 		roam();
     }
     
+
     
 	public void move(MapLocation target) throws GameActionException{
 		Direction movedir = rc.getLocation().directionTo(target);

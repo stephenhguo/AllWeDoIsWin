@@ -89,7 +89,50 @@ public class RobotLogic
 			//e.printStackTrace();
 		}
 	}
+/* Traub's supply. Not very good because they don't pass to each other.	
+	public void basicSupply() throws GameActionException{ //distributes to farther away
+		int d_sq_from_HQ = rc.senseHQLocation().distanceSquaredTo(rc.getLocation());
+		double wantedSupp = supplyFunction(d_sq_from_HQ)*(rc.getType().supplyUpkeep + 5);
+		if (rc.getType() == RobotType.HQ)
+			wantedSupp = 0;
+		rc.setIndicatorString(1, "Wanted supply: " + wantedSupp);
+		if(rc.getSupplyLevel() < wantedSupp)
+			return;
+		else{
+			RobotInfo[] myRobots = rc.senseNearbyRobots(GameConstants.SUPPLY_TRANSFER_RADIUS_SQUARED, myTeam);
+			rc.setIndicatorString(5, "Sensed robots: " + (myRobots.length));
+			if (myRobots.length == 0)
+				return;
+			RobotInfo rob = myRobots[0];
+			double maxSupply = 0, other_want, other_diff;
+			
+			for(RobotInfo inf : myRobots){
+				if(inf.health >= 20){
+					other_want = supplyFunction(rc.senseHQLocation().distanceSquaredTo(inf.location)) * (inf.type.supplyUpkeep + 5);
+					other_diff = other_want - inf.supplyLevel;
+					if(other_want > wantedSupp && other_diff > 0){
+						other_diff = Math.min(other_diff, other_want - wantedSupp);
+						if(other_diff > maxSupply){
+							maxSupply = other_diff;
+							rob = inf;
+						}
+					}
+				}
+			}
+			
+			MapLocation giveTo = rc.senseRobot(rob.ID).location;
+			if(maxSupply<rc.getSupplyLevel() && rc.senseRobotAtLocation(giveTo).equals(rob) && giveTo.distanceSquaredTo(rc.getLocation()) <= GameConstants.SUPPLY_TRANSFER_RADIUS_SQUARED){
+				rc.transferSupplies((int)(maxSupply), giveTo);
+			}
+		}
+		
+	}
 	
+	private double supplyFunction(int d_sq){
+		return Math.pow(d_sq / 50., .7) + 1;
+	}
+*/
+
 	public void basicSupply() throws GameActionException{
 		RobotInfo[] myRobots = rc.senseNearbyRobots(GameConstants.SUPPLY_TRANSFER_RADIUS_SQUARED, myTeam);
 		double minSupply = 2000.0;
@@ -109,9 +152,13 @@ public class RobotLogic
 
 		}
 	}
-	//old roam
-/*
-	public void roam(){
+	
+	/***********************************************
+	 * Movement functions
+	 ***********************************************/
+
+	//Uses very little bytecode
+	public void basicRandomWalk(){
 
 		if(!rc.isCoreReady()){
 			return;
@@ -157,187 +204,68 @@ public class RobotLogic
 			}
 		}
 	}
-*/
-
-	//new roam
 	
-	public PFObject[] avoidEnemyTowersAndHQ(MapLocation except) throws GameActionException{
-		MapLocation[] towers = radio.getEnemyTowerLocs();
-		MapLocation enemyHQ = radio.getEnemyHQLoc();
-		int len = towers.length + 1, count = 0;
-		if (except != null)
-			len--;
-		PFObject[] result = new PFObject[len];
-		result[0] = new AvoidObject(enemyHQ, 24);
-		count++;
-		
-		for(int i = 1; i < len; i++){
-			if(!towers[i-1].equals(except)){
-				result[count] = new AvoidObject(towers[i-1], 24);
-				count++;
-			}
-		}
-		return result;
-	}
-	
-	public PFObject[] avoidEnemyTowersAndHQ() throws GameActionException{
-		return avoidEnemyTowersAndHQ(null);
-	}
-	
-	public PFObject[] combine(PFObject[] a, PFObject[] b){
-		int a_len = a.length, len = a.length + b.length;
-		PFObject[] result = new PFObject[len];
-		for(int i = 0; i < len; i++){
-			if(i < a_len)
-				result[i] = a[i];
-			else
-				result[i] = b[i - a_len];
-		}
-		return result;
-	}
-	
-	public PFObject[] combine(PFObject[] a, PFObject b){
-		PFObject[] result = new PFObject[a.length + 1];
-		for(int i = 0; i < a.length; i++)
-			result[i] = a[i];
-		result[a.length] = b;
-		return result;
-	}
-	
-	
+	//Uses more bytecode, but is still random walk
 	public void roam() throws GameActionException{
-		goTo();
+		goTo(true, null, 0, 0, 0);
 	}
 	
-	public void roam(PFObject[] objects) throws GameActionException{
-		makeNextMove(objects);
+	//basic, avoids enemy towers
+	public void simpleGoal(MapLocation goal, int goalRadSq) throws GameActionException{
+		goTo(true, goal, goalRadSq);
 	}
 	
-	public void goTo() throws GameActionException{
-		goTo(null, 0);
+	public void simpleGoal(MapLocation goal) throws GameActionException{
+		simpleGoal(goal, 0);
 	}
 	
-	public void goTo(MapLocation goal) throws GameActionException{
-		goTo(goal, 0);
+	//so we can turn off avoidEnTowers
+	public void goAttack(boolean avoidEnTowers, MapLocation goal, int goalRadSq) throws GameActionException{
+		goTo(avoidEnTowers, goal, goalRadSq);
 	}
 	
-	public void goTo(MapLocation goal, int goalRadSq) throws GameActionException{
-		
-		if(!rc.isCoreReady()){
-			return;
-		}
-		
-		Direction newDir = nextMove(goal, goalRadSq);
-		justVisited = rc.getLocation();
-		if(rc.canMove(newDir)){
-			rc.move(newDir);
-		}
+	public void moveAwayFrom(MapLocation goal) throws GameActionException{
+		goTo(true, goal, 0, -1*goalStrength, 0);
 	}
 	
-	public Direction nextMove() throws GameActionException{
-		return nextMove(null, 0);
+	//would be good for miners or patrol drones
+	public void moveToArea(MapLocation goal, int goalRadSq) throws GameActionException{
+		goTo(true, goal, goalRadSq, goalStrength, goalStrength);
 	}
-	
-	public void makeNextMove(PFObject[] objects) throws GameActionException{
-		if(!rc.isCoreReady()){
-			return;
-		}
-		
-		Direction newDir = nextMove(objects);
-		justVisited = rc.getLocation();
-		if(rc.canMove(newDir)){
-			rc.move(newDir);
-		}
-	}
-	
-	public Direction nextMove(PFObject[] objects){
-		
-		//Pick possible options
-		Direction[] options_unedited = Direction.values(), options;
-		boolean[] canGo = new boolean[options_unedited.length];
-		int counter = 0, none = -1;
-		for(int i = 0; i < canGo.length; i++){
-			if (!options_unedited[i].equals(Direction.NONE))
-				canGo[i] = rc.canMove(options_unedited[i]);
-			else{
-				canGo[i] = true;
-				none = counter;
-			}
-			if(canGo[i])
-				counter++;
-			
-		}
-		options = new Direction[counter];
-		double[] values = new double[counter];
-		
-		//Set current location to be less desirable
-		//if(none != -1)	
-		//	values[none] = -2.5;
-		
-		counter = 0;
-		for(int i = 0; i < canGo.length; i++){
-			if (canGo[i]){
-				options[counter] = options_unedited[i];
-				counter++;
-			}
-		}
-		
-		
-		//Update field
-		if (justVisited != null){
-			update(options, values, new LinearObject(justVisited, -1, 2));
-		}
-		
-		PFObject obj;
-		for(int i = 0; i < objects.length;  i++){
-			obj = objects[i];
-			if (obj != null)
-				update(options, values, obj);
-		}
-		
-		
-		//Pick best direction
-		int index = 0, count = 0;
-		double maxVal = -1000;
-		for(int i = 0; i < values.length; i++){
-			if(values[i] > maxVal){
-				maxVal = values[i];
-				index = i;
-				count++;
-			}
-			else if(values[i] == maxVal){
-				index += i * Math.pow(10, count);
-				count++;
-			}
-		}
-		
-		int possibilities = (int) Math.log10(index) + 1;
-		int selection = (int)(rand.nextDouble() * possibilities);
-		Direction newDir = options[(int) ((index % Math.pow(10, selection + 1)) / Math.pow(10, selection))];
-		
-		String str = "";
-		for(int i = 0; i < values.length; i++){
-			str += options[i] +": " + values[i] + ", ";
-		}
-		
-		rc.setIndicatorString(0, str);
-		
-		return newDir;	
-		
-	}
-	
-	public Direction nextMove(MapLocation goal, int goalRadSq) throws GameActionException{
-	
-		//RobotInfo[] enemyBots = rc.senseNearbyRobots(5, myTeam.opponent());
-		int byte1 = Clock.getBytecodeNum();
 
-		//RobotInfo[] friendBots = rc.senseNearbyRobots(2, myTeam);
-		MapLocation[] towers = radio.getEnemyTowerLocs();
-		MapLocation myLoc = rc.getLocation(), enemyHQ = radio.getEnemyHQLoc();
+	
+	//the most general moveMethod, everything else should call this if it uses potential
+	public void goTo(boolean avoidEnTowers, MapLocation goal, int goalRadSq, double w_out, double w_in) throws GameActionException{
 		
-		//codes
-		int GOAL = 0, VOID = 1, TOWER = 2, JUSTVISITED = 3, ENEMYHQ = 4;
+		if(!rc.isCoreReady()){
+			return;
+		}
 		
+		Direction newDir = nextMove(avoidEnTowers, goal, goalRadSq, w_out, w_in);
+		justVisited = rc.getLocation();
+		if(rc.canMove(newDir)){
+			rc.move(newDir);
+		}
+	}
+	
+	public void goTo(boolean avoidEnTowers, MapLocation goal, int goalRadSq) throws GameActionException{
+		goTo(avoidEnTowers, goal, goalRadSq, goalStrength, 0);
+	}
+	
+	/***********************************************
+	 * NextMove and its Update functions
+	 ***********************************************/
+	
+	//Does heavy lifting of picking next spot to move
+	public Direction nextMove(boolean avoidEnTowers, MapLocation goal, int goalRadSq, double w_out, double w_in) throws GameActionException{
+	
+
+		MapLocation myLoc = rc.getLocation();
+		
+		//codes for update function
+		int VOID = 1, TOWER = 2, JUSTVISITED = 3, ENEMYHQ = 4;
+		
+		//This block just builds up the options and values variables, blocking out void and occupied spaces
 		Direction[] options_unedited = Direction.values(), options;
 		boolean[] canGo = new boolean[options_unedited.length];
 		int counter = 0, none = -1;
@@ -366,23 +294,28 @@ public class RobotLogic
 			}
 		}
 		
-		
-		for(int i = 0; i < towers.length; i++){ //update for towers
-			if (!towers[i].equals(goal))
-				update(options, values, towers[i], TOWER);
+		//Avoids enemy towers if wanted
+		if (avoidEnTowers){
+			MapLocation[] towers = radio.getEnemyTowerLocs();
+			MapLocation enemyHQ = radio.getEnemyHQLoc();
+			for(int i = 0; i < towers.length; i++){ //update for towers
+				if (!towers[i].equals(goal))
+					update(options, values, towers[i], TOWER);
+			}
+			if(!enemyHQ.equals(goal))	
+				update(options, values, enemyHQ, ENEMYHQ);
 		}
 		
+		//Makes repulsive just was square
 		if (justVisited != null){
 			update(options, values, justVisited, JUSTVISITED);
 		}
 		
-		if(!enemyHQ.equals(goal))	
-			update(options, values, enemyHQ, ENEMYHQ);
-		
+		//updates for goal using special goalUpdate method
 		if (goal != null)
-				update(options, values, goal, GOAL, goalRadSq); //update for goal
+				goalUpdate(options, values, goal, goalRadSq, w_out, w_in); //update for goal
 		
-		
+		//Picks directions with max potential
 		int index = 0, count = 0;
 		double maxVal = -1000;
 		for(int i = 0; i < values.length; i++){
@@ -397,55 +330,73 @@ public class RobotLogic
 			}
 		}
 		
+		//randomly picks one of these max valued directions
 		int possibilities = (int) Math.log10(index) + 1;
 		int selection = (int)(rand.nextDouble() * possibilities);
 		Direction newDir = options[(int) ((index % Math.pow(10, selection + 1)) / Math.pow(10, selection))];
 		
+		//sets indicator string
 		String str = "";
 		for(int i = 0; i < values.length; i++){
 			str += options[i] +": " + values[i] + ", ";
 		}
-		//rc.setIndicatorString(0, str);
-		
-		//System.out.print(byte2 - byte1);
+
 		
 		return newDir;	
 	}
 	
-	public void update(Direction[] options, double[] values, PFObject obj){
-		MapLocation spot;
-		double val;
-		for(int i = 0; i < options.length; i++){
-			spot = rc.getLocation().add(options[i]);
-			val = obj.calculate(spot);
-			values[i] = addPotentials(values[i], val);
-		}
+	public Direction nextMove(boolean avoidEnTowers, MapLocation goal) throws GameActionException{
+		return nextMove(true, goal, 0, goalStrength, 0.);
 	}
 	
-	public void update(Direction[] options, double[] values, MapLocation other, int code, int rad_sq) // for processing walls, goal
+	public Direction nextMove(boolean avoidEnTowers, MapLocation goal, double weight) throws GameActionException{
+		return nextMove(true, goal, 0, weight, 0.);
+	}
+	
+	public Direction nextMove() throws GameActionException{
+		return nextMove(true, null);
+	}
+	
+	// for processing walls, towers, enemyHQ, and justVisited
+	public void update(Direction[] options, double[] values, MapLocation other, int code, int rad_sq)
 	{
-		//finish, use switch inside for loop
 		int d_sq;
 		double val;
 		for(int i = 0; i < options.length; i++){
 			d_sq = other.distanceSquaredTo(rc.getLocation().add(options[i]));
 			switch(code){
-			case 0: //goal
-				val = PFObject.decayUpTo(d_sq, goalStrength, -30., rad_sq); break;
 			case 1: //void
-				val = PFObject.step(d_sq, -30., 0); break;
+				val = step(d_sq, -30., 0); break;
 			case 2: //tower
-				val = PFObject.step(d_sq, -30., 24); break;
+				val = step(d_sq, -30., 24); break;
 			case 3: //justvisited
-				val = PFObject.linear(d_sq, -1, 2); break;
+				val = linear(d_sq, -1, 2); break;
 			case 4: //enemyHQ
-				val = PFObject.step(d_sq, -50., 24); break;
+				val = step(d_sq, -50., 24); break;
 			default:
 				val = 0;
 			}
 			values[i] = addPotentials(values[i], val); 
 			
 		}
+	}
+	
+	public void goalUpdate(Direction[] options, double[] values, MapLocation gLoc, int r_sq, double w_out, double w_in){ // for processing goal
+		int d_sq;
+		double val;
+		for(int i = 0; i < options.length; i++){
+			d_sq = gLoc.distanceSquaredTo(rc.getLocation().add(options[i]));
+			val = decayUpTo(d_sq, w_out, w_in, r_sq);
+			values[i] = addPotentials(values[i], val); 
+		}
+	}
+	
+	public void goalUpdate(Direction[] options, double[] values, MapLocation gLoc, int r_sq){
+		goalUpdate(options, values, gLoc, r_sq, goalStrength, -1*goalStrength);
+	}
+	
+	public void goalUpdate(Direction[] options, double[] values, MapLocation gLoc){
+		goalUpdate(options, values, gLoc, 0);
 	}
 	
 	
@@ -456,7 +407,7 @@ public class RobotLogic
 		for(int i = 0; i < options.length; i++){
 			d_sq = other.location.distanceSquaredTo(rc.getLocation().add(options[i]));
 			if (other.team == myTeam)
-				val = PFObject.step(d_sq, -30., 0);
+				val = step(d_sq, -30., 0);
 			else
 				val = 0;
 			
@@ -469,8 +420,67 @@ public class RobotLogic
 		update(options, values, other, code, 0);
 	}
 	
+	/***********************************************
+	 * Potential functions
+	 ***********************************************/
+	
+	
 	public double addPotentials(double a, double b){
 		return Math.min(Math.max(a,b), Math.max(a+b, Math.min(a,b)));
+	}
+
+	
+	public double linear(int d_sq, double weight, int r_sq){
+		if (d_sq < r_sq)
+			return (double) weight / r_sq * (r_sq - d_sq);
+		else
+			return 0.;
+	}
+	
+	public double step(int d_sq, double weight, int r_sq){
+		if (d_sq <= r_sq)
+			return weight;
+		else
+			return 0;
+	}
+	
+	public double decay(int d_sq, double weight, int r_sq){
+		if (d_sq >= r_sq)
+			return weight / (1.+ (d_sq-r_sq));
+		else
+			return weight*(d_sq/r_sq)*(d_sq/r_sq);
+			
+	}
+	
+	public double decay(int d_sq, double weight){
+		return decay(d_sq, weight, 0);
+	}
+	
+	public double decayUpTo(int d_sq, double w_out, double w_in, int r_sq){
+		if (d_sq > r_sq)
+			return w_out / (1.+ (d_sq-r_sq));
+		else
+			return w_in;
+	}
+	
+	public double linearUpTo(int d_sq, double w_out, double w_in, int boundary_sq, int r_sq){
+		if (d_sq >= r_sq)
+			return w_out / r_sq * (boundary_sq + r_sq - d_sq);
+		else
+			return w_in;
+	}
+	
+	public double repulsiveCorner(int d_x, int d_y, double weight, int quad, int r_sq){
+		if(quad == 1 && d_x > 0 && d_y > 0)
+			return weight*(r_sq - d_x - d_y);
+		else if(quad == 2 && d_x < 0 && d_y > 0)
+			return weight*(r_sq + d_x - d_y);
+		else if(quad == 3 && d_x < 0 && d_y < 0)
+			return weight*(r_sq + d_x + d_y);
+		else if(quad == 4 && d_x > 0 && d_y < 0)
+			return weight*(r_sq - d_x + d_y);
+		else
+			return 0.;
 	}
 	
 	

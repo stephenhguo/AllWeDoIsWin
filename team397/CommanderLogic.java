@@ -1,12 +1,16 @@
 package team397;
 
+<<<<<<< HEAD
 import battlecode.common.*;
+=======
+import battlecode.common.RobotController;
+>>>>>>> 6a6add788d0e567b20da1bc1fa499abbb07091b4
 
 public class CommanderLogic extends RobotLogic {
 
-	MapLocation attTarget;
     public CommanderLogic(RobotController controller) {
     	super(controller);
+<<<<<<< HEAD
     	attTarget = null;
     	
     }
@@ -47,6 +51,8 @@ public class CommanderLogic extends RobotLogic {
     			rc.castFlash(teleportLoc);
     		}
     	}
+=======
+>>>>>>> 6a6add788d0e567b20da1bc1fa499abbb07091b4
     }
 
 }

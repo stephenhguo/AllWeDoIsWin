@@ -10,6 +10,7 @@ public class BeaverLogic extends RobotLogic{
 	public BeaverLogic(RobotController controller) throws GameActionException
 	{
 		super(controller);
+		myRange = rc.getType().attackRadiusSquared;
 		exploring = radio.shouldSearch(RobotType.BEAVER);
 		mining = false;
 	}
@@ -27,9 +28,7 @@ public class BeaverLogic extends RobotLogic{
 		attack(myRange);
 		phaseBuild();
 		//moveAndMine();
-		MapLocation myHQ = rc.senseHQLocation();
-		PFObject[] stayNear = {new SurroundObject(myHQ, 5, 5, 144), new LinearObject(myHQ, -5, 9)};
-		roam(stayNear);
+		roam();
 		
 		//attTarget = getAttTarget();
 		//move(attTarget);
