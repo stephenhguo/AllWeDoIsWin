@@ -8,36 +8,48 @@ import battlecode.common.RobotType;
 public class MessageMaster {
 
 	//these are variables for CHANNELS (1 - 65000)
-	public final int[] DRONEATTACK = {0,1,100}; // (x,y)
-	public final int[] SOLDIERATTACK = {3,4,103}; //(x,y)
-	public final int[] TANKATTACK = {5,6,105}; // (x,y,rad sq)
+	private final int[] DRONEATTACK = {0,1,100}; // (x,y)
+	private final int[] SOLDIERATTACK = {3,4,103}; //(x,y)
+	private final int[] TANKATTACK = {5,6,105}; // (x,y,rad sq)
 	//public final int NEXTBUILDING = 2;
-	public final int ENEMYTOWER_LOCS = 1003; //begins list of enemy tower locations
-	public int ENEMYTOWERS_NUM = 1002;
-	public final int[] ENEMYHQLOC = {1000, 1001};
+	private final int ENEMYTOWER_LOCS = 1003; //begins list of enemy tower locations
+	private int ENEMYTOWERS_NUM = 1002;
+	private final int[] ENEMYHQLOC = {1000, 1001};
 	
-	public final int[] DRONESEARCH = {52};
-	public final int[] BEAVERSEARCH = {53};
-	public final int[] MINERSEARCH = {54};
+	private final int[] DRONESEARCH = {52};
+	private final int[] BEAVERSEARCH = {53};
+	private final int[] MINERSEARCH = {54};
 	
-	public final int BUILD_PHASE = 10;
-	public final int BEAVER_COUNT = 11;
-	public final int MINEFACT_COUNT = 12;
-	public final int MINER_COUNT = 13;
-	public final int HELIPAD_COUNT = 14;
-	public final int DRONE_COUNT = 15;
-	public final int MIT_COUNT = 16;
-	public final int TRAINF_COUNT = 17;
-	public final int COMM_COUNT = 18;
-	public final int BAR_COUNT = 19;
-	public final int TANKFAC_COUNT = 20;
-	public final int TANK_COUNT = 21;
+	private final int BUILD_PHASE = 10;
+	private final int BEAVER_COUNT = 11;
+	private final int MINEFACT_COUNT = 12;
+	private final int MINER_COUNT = 13;
+	private final int HELIPAD_COUNT = 14;
+	private final int DRONE_COUNT = 15;
+	private final int MIT_COUNT = 16;
+	private final int TRAINF_COUNT = 17;
+	private final int COMM_COUNT = 18;
+	private final int BAR_COUNT = 19;
+	private final int TANKFAC_COUNT = 20;
+	private final int TANK_COUNT = 21;
 	
-	public final int SYMMETRY = 300; // 301, 302 contain center of map
+	private final int SYMMETRY = 300; // 301, 302 contain center of map
 	
 	//internal codes
 	private final int SWARM = 0;
 	private final int SEARCH = 1;
+	private final int CHECK_JOBS = 2;
+	
+	//external codes
+	public final int HUNT_TEAM = 5;
+	public final int SUPPLY_TEAM = 3;
+	public final int ATTACK_TEAM = 4;
+	
+	//drone subgroup counters
+	private final int[] DRONE_JOB_CODES = {SUPPLY_TEAM, HUNT_TEAM, ATTACK_TEAM};
+	private final int[] DRONE_HUNT_COUNT = {456, 467}; //(wanted, existing) so HQ sets wanted and each bot increments existing
+	private final int[] DRONE_SUPPLY_COUNT = {202, 203};
+	private final int[] DRONE_ATTACK_COUNT = {204, 205};
 	
 
 	public RobotController rc;
@@ -125,6 +137,40 @@ public class MessageMaster {
 		return result;
 	}
 	
+	public int checkJobs(RobotType type) throws GameActionException{
+		int[] jobs = typeSwitch(type, CHECK_JOBS), channels;
+		int wanted;
+		for(int i = 0; i < jobs.length; i++){
+			channels = typeSwitch(type, jobs[i]);
+			wanted = rc.readBroadcast(channels[0]);
+			if(wanted > 0){
+				rc.broadcast(channels[0], wanted - 1);
+				return jobs[i];
+			}
+		}
+		return -1;
+	}
+	
+	public void setWanted(RobotType type, int team, int wanted) throws GameActionException{
+		int[] channels = typeSwitch(type, team);
+		rc.broadcast(channels[0], wanted);
+	}
+	
+	public void incAttendance(RobotType type, int team) throws GameActionException{
+		int[] channels = typeSwitch(type, team);
+		rc.broadcast(channels[1], rc.readBroadcast(channels[1]) + 1);
+	}
+	
+	public int getAttendance(RobotType type, int team) throws GameActionException{
+		int[] channels = typeSwitch(type, team);
+		return rc.readBroadcast(channels[1]);
+	}
+	
+	public void resetAttendance(RobotType type, int team) throws GameActionException{
+		int[] channels = typeSwitch(type, team);
+		rc.broadcast(channels[1], 0);
+	}
+	
 	private int[] typeSwitch(RobotType type, int code){ //codes are defined with constants above
 		RobotType[] list = {RobotType.HQ, //0
 			  RobotType.TOWER, //1
@@ -151,26 +197,35 @@ public class MessageMaster {
 		while (list[typeCode] != type && typeCode < list.length)
 			typeCode++;
 		
-		switch(typeCode){ //these should be modified as we expand functionality
-			case 3:
+		//these should be modified as we expand functionality
+		switch(typeCode){ 
+			case 3: //tank
 				if (code == SWARM)
 					return TANKATTACK;
 				break;
-			case 5:
+			case 5: //drone
 				if (code == SWARM)
 					return DRONEATTACK;
 				else if(code == SEARCH)
 					return DRONESEARCH;
+				else if(code == ATTACK_TEAM)
+					return DRONE_ATTACK_COUNT;
+				else if(code == HUNT_TEAM)
+					return DRONE_HUNT_COUNT;
+				else if(code == SUPPLY_TEAM)
+					return DRONE_SUPPLY_COUNT;
+				else if(code == CHECK_JOBS)
+					return DRONE_JOB_CODES;
 				break;
-			case 8:
+			case 8: //solider
 				if (code == SWARM)
 					return SOLDIERATTACK;
 				break;
-			case 9:
+			case 9: //beaver
 				if (code == SEARCH)
 					return BEAVERSEARCH;
 				break;
-			case 10:
+			case 10: //miners
 				if (code == SEARCH)
 					return MINERSEARCH;
 				break;

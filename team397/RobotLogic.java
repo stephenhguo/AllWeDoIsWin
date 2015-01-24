@@ -164,7 +164,7 @@ public class RobotLogic
 			return;
 		}
 		int dir = rand.nextInt(8);
-		rc.setIndicatorString(0, Double.toString(rc.getHealth()));
+		//rc.setIndicatorString(0, Double.toString(rc.getHealth()));
 		Direction movedir;
 		switch(dir){
 		case 0:
@@ -307,9 +307,9 @@ public class RobotLogic
 		}
 		
 		//Makes repulsive just was square
-		if (justVisited != null){
-			update(options, values, justVisited, JUSTVISITED);
-		}
+		//if (justVisited != null){
+		//	update(options, values, justVisited, JUSTVISITED);
+		//}
 		
 		//updates for goal using special goalUpdate method
 		if (goal != null)

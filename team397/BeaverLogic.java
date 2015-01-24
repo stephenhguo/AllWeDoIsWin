@@ -28,7 +28,7 @@ public class BeaverLogic extends RobotLogic{
 		attack(myRange);
 		phaseBuild();
 		//moveAndMine();
-		roam();
+		moveToArea(rc.senseHQLocation(), 81);
 		
 		//attTarget = getAttTarget();
 		//move(attTarget);

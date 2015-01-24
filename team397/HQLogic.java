@@ -35,24 +35,21 @@ public class HQLogic extends RobotLogic{
 		beaversSearching = true;
 		minersSearching = true;
 		
+		retreat(RobotType.DRONE);
+		
 		radio.initializeBuildPhase();
 		
 		numBeaver=numDrone=numTank=numMiner=numComm=numMinerFact=numHeli=numMIT=numTrainF=numBar=numTankF=0;
 	}
 	
-	public void run()
+	public void run() throws GameActionException
 	{
-		try {
-			attack(myRange);
-			basicSupply();
-			spawn();
-			countBots();
-			if (numBeaver > 5 && beaversSearching)
-				radio.searchOrders(RobotType.BEAVER, false);
-			planAttack();
-		} catch (Exception e) {
-			e.printStackTrace();
-		}
+		attack(myRange);
+		basicSupply();
+		spawn();
+		countBots();
+		manageTeams();
+		planAttack();
 	}
 	
 	public void countBots() throws GameActionException{
@@ -139,7 +136,31 @@ public class HQLogic extends RobotLogic{
 		}
 	}
 	
-	public void spawn() throws Exception
+	public void manageTeams() throws GameActionException{
+		// droneTeams = radio.ATTACK_TEAM, radio.HUNT_TEAM, radio.SUPPLY_TEAM
+		int minAttackSize = 20, minHuntSize = 5, minSupplySize = 0;
+		int attackSize, huntSize, supplySize;
+		
+		attackSize = radio.getAttendance(RobotType.DRONE, radio.ATTACK_TEAM);
+		radio.resetAttendance(RobotType.DRONE, radio.ATTACK_TEAM);
+		radio.setWanted(RobotType.DRONE, radio.ATTACK_TEAM, Math.max(minAttackSize - attackSize, 0));
+		
+		huntSize = radio.getAttendance(RobotType.DRONE, radio.HUNT_TEAM);
+		radio.resetAttendance(RobotType.DRONE, radio.HUNT_TEAM);
+		radio.setWanted(RobotType.DRONE, radio.HUNT_TEAM, Math.max(minHuntSize - huntSize, 0));
+		System.out.println("" + Math.max(minHuntSize - huntSize, 0));
+		
+		supplySize = radio.getAttendance(RobotType.DRONE, radio.SUPPLY_TEAM);
+		radio.resetAttendance(RobotType.DRONE, radio.SUPPLY_TEAM);
+		radio.setWanted(RobotType.DRONE, radio.SUPPLY_TEAM, Math.max(minSupplySize - supplySize, 0));
+		
+		numDrone = attackSize;
+		rc.setIndicatorString(0, "Number of attack drones:" + attackSize);
+		rc.setIndicatorString(1, "Number of hunt drones:" + huntSize);
+		//System.out.println("" + attackSize + ", " + huntSize);
+	}
+	
+	public void spawn() throws GameActionException
 	{
 		int buildPhase = radio.getBuildPhase();
 		rc.setIndicatorString(0, Integer.toString(buildPhase));
@@ -172,9 +193,9 @@ public class HQLogic extends RobotLogic{
 	public void planAttack() throws GameActionException{
 		//swarmEnemyTower(RobotType.DRONE);
 		if(numDrone>=20){
-			swarmEnemyTower(RobotType.TANK);
+			swarmEnemyTower(RobotType.DRONE);
 		} else if(numDrone<=7){
-			retreat(RobotType.TANK);
+			retreat(RobotType.DRONE);
 		}		
 	}
 	

@@ -6,27 +6,27 @@ import battlecode.common.MapLocation;
 import battlecode.common.RobotController;
 import battlecode.common.RobotInfo;
 import battlecode.common.RobotType;
+import battlecode.common.TerrainTile;
 
 public class MinerLogic extends RobotLogic {
 
 	private boolean mining, exploring;
-	
+	private MapLocation loc,next;
+	private Direction dir;
 	
     public MinerLogic(RobotController controller) throws GameActionException {
     	super(controller);
-		mining = false;
-		exploring = false; //radio.shouldSearch(RobotType.MINER);
+		loc=rc.getLocation();
+		dir=loc.directionTo(rc.senseEnemyHQLocation());
+		next=null;
+		
     }
     
     public void run()
 	{
 		rc.setIndicatorString(1, "Searching: " + exploring);
 		try {
-			emergencyRoam();
-			basicSupply();
-			attack(myRange);
-			moveAndMine();
-			roam();
+			mowTheLawn();
 		} catch (Exception e) {
 			e.printStackTrace();
 		}
@@ -83,7 +83,9 @@ public class MinerLogic extends RobotLogic {
 		    else{
 		        Direction move=rc.getLocation().directionTo(maxOreLoc);
 		        if (rc.isCoreReady() && rc.canMove(move))
-		            simpleGoal(maxOreLoc);
+
+		            moveToArea(maxOreLoc, 25);
+
 		        	rc.yield();
 		    }
 		} else {
@@ -100,7 +102,29 @@ public class MinerLogic extends RobotLogic {
     * This is how the Miners will mine everything from our corner
     * to midfield and then the other end
     */
-   public void mowTheLawn(){
-       
+   public void mowTheLawn() throws GameActionException{
+      
+      MapLocation loc=rc.getLocation();
+      double ore=rc.senseOre(loc);
+      if (ore>1){//mine
+          if (rc.isCoreReady() && rc.canMine()){
+              rc.mine();
+          }
+      } else{
+          //move to next closest spot with ore and mine
+          next=loc.add(dir);
+          boolean occ=rc.isLocationOccupied(next);
+          if (!rc.senseTerrainTile(next).isTraversable() || occ){
+              if (rand.nextDouble()>1){
+                  next=loc.add(dir.rotateLeft()); 
+              } else {
+                  next=loc.add(dir.rotateRight());
+              }
+          } else {
+              if (rc.isCoreReady() && rc.canMove(dir)){
+                  moveAwayFrom(rc.senseHQLocation());
+              } 
+          }
+      }
    }
 }
