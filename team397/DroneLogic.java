@@ -29,16 +29,22 @@ public class DroneLogic extends RobotLogic {
 		basicSupply();
 		
 		if(team == radio.HUNT_TEAM){
-			hunt();
+			attack(myRange);
+			moveToArea(rc.senseEnemyHQLocation(),170);
+			/*hunt();
 			if(hunting){
 				stalk(huntTarget);
 			}
 			if(!hunting){
-				moveToArea(rc.senseEnemyHQLocation(),225);
+				attack(myRange);
+				moveToArea(rc.senseEnemyHQLocation(),170);
 				//attTarget = radio.getSwarmLoc(RobotType.DRONE);
 				//int attRad = radio.getSwarmRadius(RobotType.DRONE);
 				//simpleGoal(attTarget, attRad);
+				  
+				 
 			}
+			*/
 		}
 		else{
 			attack(myRange);
@@ -56,9 +62,8 @@ public class DroneLogic extends RobotLogic {
 		if(enemies.length==0){
 			return;
 		}
-		double minHealth = 2000.0;
-		RobotInfo enemyToAttack = enemies[0];
-		for(RobotType pref: attackPreference)
+		RobotInfo enemyToAttack = null;
+		for(RobotType pref: huntPreference)
 		{
 			for(RobotInfo inf : enemies){
 				if(inf.type.equals(pref)){
@@ -66,19 +71,12 @@ public class DroneLogic extends RobotLogic {
 					huntTarget = inf;
 					break;
 				}
-				/*
-				minHealth=2000.0;
-				if(inf.health<minHealth){
-					minHealth = inf.health;
-					enemyToAttack = inf;
-				}
-				*/
 			}	
 		}
     }
     
     public void stalk(RobotInfo inf) throws GameActionException{
-    	rc.setIndicatorString(0, Boolean.toString(hunting));
+    	rc.setIndicatorString(3, Boolean.toString(hunting));
     	if(inf.health<=0){
     		hunting = false;
     	}

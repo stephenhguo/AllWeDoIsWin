@@ -42,6 +42,9 @@ public class RobotLogic
 			RobotType.TANKFACTORY,
 			RobotType.AEROSPACELAB,
 			RobotType.MINERFACTORY,
+			RobotType.BEAVER,
+			RobotType.MINER,
+			RobotType.COMPUTER,
 			RobotType.TRAININGFIELD,
 			RobotType.BARRACKS,
 			RobotType.TOWER, 
@@ -52,16 +55,28 @@ public class RobotLogic
 			RobotType.LAUNCHER,
 			RobotType.BASHER,
 			RobotType.SOLDIER,
-			RobotType.BEAVER,
-			RobotType.MINER,
 			RobotType.SUPPLYDEPOT,
 			RobotType.TECHNOLOGYINSTITUTE,
 			RobotType.HANDWASHSTATION,
-			RobotType.COMPUTER};
+			};
 	
 	/*
 	 * This method is meant to be overridden for each specific unit logic.
 	 */
+	public RobotType[] huntPreference = {RobotType.HQ, 
+			RobotType.MINERFACTORY,
+			RobotType.BEAVER,
+			RobotType.MINER,
+			RobotType.HELIPAD,
+			RobotType.TANKFACTORY,
+			RobotType.AEROSPACELAB,
+			RobotType.COMPUTER,
+			RobotType.TRAININGFIELD,
+			RobotType.BARRACKS,
+			RobotType.SUPPLYDEPOT,
+			RobotType.TECHNOLOGYINSTITUTE,
+			RobotType.HANDWASHSTATION,
+			};
 	
 	public void run() throws GameActionException{}
 	
@@ -242,8 +257,8 @@ public class RobotLogic
 		}
 		
 		Direction newDir = nextMove(avoidEnTowers, goal, goalRadSq, w_out, w_in);
-		justVisited = rc.getLocation();
 		if(rc.canMove(newDir)){
+			justVisited = rc.getLocation();
 			rc.move(newDir);
 		}
 	}
@@ -283,8 +298,8 @@ public class RobotLogic
 		options = new Direction[counter];
 		double[] values = new double[counter];
 		
-		if(none != -1)	
-			values[none] = -2.5;
+		//if(none != -1)	
+		//	values[none] = -.5;
 		
 		counter = 0;
 		for(int i = 0; i < canGo.length; i++){
@@ -368,11 +383,11 @@ public class RobotLogic
 			case 1: //void
 				val = step(d_sq, -30., 0); break;
 			case 2: //tower
-				val = step(d_sq, -30., 24); break;
+				val = step(d_sq, -30., 25); break;
 			case 3: //justvisited
-				val = linear(d_sq, -1, 2); break;
+				val = linear(d_sq, -1, 1); break;
 			case 4: //enemyHQ
-				val = step(d_sq, -50., 24); break;
+				val = step(d_sq, -50., 25); break;
 			default:
 				val = 0;
 			}
