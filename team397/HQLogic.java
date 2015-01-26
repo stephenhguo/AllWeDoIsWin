@@ -140,7 +140,7 @@ public class HQLogic extends RobotLogic{
 	
 	public void manageTeams() throws GameActionException{
 		// droneTeams = radio.ATTACK_TEAM, radio.HUNT_TEAM, radio.SUPPLY_TEAM
-		int minAttackSize = 25, minHuntSize = 0, minSupplySize = 0;
+		int minAttackSize = 0, minHuntSize = 0, minSupplySize = 0;
 		int attackSize, huntSize, supplySize;
 		
 		attackSize = radio.getAttendance(RobotType.DRONE, radio.ATTACK_TEAM);
@@ -156,7 +156,7 @@ public class HQLogic extends RobotLogic{
 		//if(numDrone - (attackSize + huntSize + supplySize) >= 5)
 		//	minHuntSize = 5;
 		if(numDrone - (huntSize + supplySize) > 15)
-			minHuntSize = 0;
+			minAttackSize = 15;
 		else
 			radio.setHunterSwitch(radio.HUNT_TEAM);
 		
