@@ -35,7 +35,7 @@ public class HQLogic extends RobotLogic{
 		beaversSearching = true;
 		minersSearching = true;
 		
-		retreat(RobotType.DRONE);
+		retreat(RobotType.TANK);
 		radio.setHunterSwitch(radio.HUNT_TEAM);
 		
 		radio.initializeBuildPhase();
@@ -51,6 +51,7 @@ public class HQLogic extends RobotLogic{
 		countBots();
 		manageTeams();
 		planAttack();
+		rc.setIndicatorString(0, Integer.toString(radio.getBuildPhase()));
 	}
 	
 	public void countBots() throws GameActionException{
@@ -186,27 +187,18 @@ public class HQLogic extends RobotLogic{
 				}
 			}
 		}
-		//should this be here?
-		if(buildPhase==2  && CommNum==1){
-			radio.advanceBuildPhase(1);
-		}
-		if(buildPhase==4  && CommNum==1){
-			radio.advanceBuildPhase(-1);
-		}
-		if(buildPhase==3 && CommNum==0){
-			radio.advanceBuildPhase(1);
-		}
 	}
 	
 	
 	public void planAttack() throws GameActionException{
 		//swarmEnemyTower(RobotType.DRONE);
-		if(numDrone>=25){
-			swarmEnemyTower(RobotType.DRONE);
-		} else if(numDrone<=7){
-			retreat(RobotType.DRONE);
+		rc.setIndicatorString(1, Integer.toString(numTank));
+		if(numTank>=25){
+			swarmEnemyTower(RobotType.TANK);
+		} else if(numTank<=7){
+			retreat(RobotType.TANK);
 		}	
-		swarmEnemyTower(RobotType.TANK);
+		//swarmEnemyTower(RobotType.TANK);
 	}
 	
 	public void swarmEnemyTower(RobotType type) throws GameActionException{

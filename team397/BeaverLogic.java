@@ -50,9 +50,10 @@ public class BeaverLogic extends RobotLogic{
 				rc.yield();
 			}
 			return;		
-		case 1:
-			if(mineFacNum<2){
+		/*case 1:
+			if(mineFacNum<1){
 				if(build(RobotType.MINERFACTORY)){
+					radio.advanceBuildPhase(1);
 					rc.yield();
 				}
 			}
@@ -61,70 +62,48 @@ public class BeaverLogic extends RobotLogic{
 					rc.yield();
 				}
 			}
-			return;
-		case 2:
-			if(mineFacNum<2){
+			return;*/
+		default:
+			if(mineFacNum<1){
 				if(build(RobotType.MINERFACTORY)){
 					rc.yield();
 				}
-			}
-			if(heliNum<3){
+			}/*
+			if(heliNum<1){
 				if(build(RobotType.HELIPAD)){
 					rc.yield();
 				}
-			}
-			
-			if(MITNum<1){
-				if(build(RobotType.TECHNOLOGYINSTITUTE)){
-					rc.yield();
-				}
-			}
-			if(TrainFNum<1){
-				if(build(RobotType.TRAININGFIELD)){
-					rc.yield();
-				}
-			}
-			if(TankFNum<2){
-				if(build(RobotType.TANKFACTORY)){
-					rc.yield();
-				}
-			}
-			return;
-		case 3:
-		case 4:
+			}*/
 			if(BarNum<1){
 				if(build(RobotType.BARRACKS)){
 					rc.yield();
 				}
 			}
-			if(mineFacNum<1){
-				if(build(RobotType.MINERFACTORY)){
-					rc.yield();
-				}
-			}
-			if(MITNum<1){
-				if(build(RobotType.TECHNOLOGYINSTITUTE)){
-					rc.yield();
-				}
-			}
-			if(TrainFNum<1){
-				if(build(RobotType.TRAININGFIELD)){
-					rc.yield();
-				}
-			}
-			if(heliNum<2){
-				if(build(RobotType.HELIPAD)){
-					rc.yield();
-				}
-			}
-			if(TankFNum<10){
+			if(TankFNum<3){
 				if(build(RobotType.TANKFACTORY)){
 					rc.yield();
 				}
 			}
 			return;
+		/*case 3:
+			if(mineFacNum<1){
+				if(build(RobotType.MINERFACTORY)){
+					rc.yield();
+				}
+			}
+			if(BarNum<1){
+				if(build(RobotType.BARRACKS)){
+					rc.yield();
+				}
+			}
+			if(TankFNum<3){
+				if(build(RobotType.TANKFACTORY)){
+					radio.advanceBuildPhase(1);
+					rc.yield();
+				}
+			}
 		default:
-			return;
+			return;*/
 		}
 	}
 	

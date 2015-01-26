@@ -12,16 +12,29 @@ import battlecode.common.Team;
 public class TankLogic extends RobotLogic {
 
 	private MapLocation attTarget;
+	private boolean supplying;
 	
     public TankLogic(RobotController controller) {
         super(controller);
+        supplying = true;
     }
 
     public void run() throws GameActionException{
+    	/*if(supplying){
+    		if(rc.getSupplyLevel()>1900){
+				supplying=false;
+			}
+			simpleGoal(rc.senseHQLocation(),3);
+    	} else{*/
     	basicSupply();
 		attack(myRange);
-		MapLocation commanderLoc = radio.getSwarmLoc(RobotType.TANK);
-		int radius = radio.getSwarmRadius(RobotType.TANK);
+		attTarget = radio.getSwarmLoc(RobotType.TANK);
+		int attRad = radio.getSwarmRadius(RobotType.TANK);
+		if (attTarget.equals(rc.senseHQLocation()))
+			simpleGoal(attTarget, attRad);
+		else
+			goAttack(false, attTarget, attRad);
+    	//}
     }
 
 //    /*
