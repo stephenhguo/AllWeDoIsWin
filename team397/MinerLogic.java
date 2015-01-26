@@ -1,32 +1,32 @@
 package team397;
 
+import java.util.Random;
+
 import battlecode.common.Direction;
 import battlecode.common.GameActionException;
 import battlecode.common.MapLocation;
 import battlecode.common.RobotController;
-import battlecode.common.RobotInfo;
-import battlecode.common.RobotType;
-import battlecode.common.TerrainTile;
 
 public class MinerLogic extends RobotLogic {
 
 	private boolean mining, exploring;
-	private MapLocation last, loc, next;
+	private MapLocation loc, next;
 	private Direction dir;
+	private Direction facing;
 	
     public MinerLogic(RobotController controller) throws GameActionException {
     	super(controller);
 		loc=rc.getLocation();
 		dir=loc.directionTo(rc.senseEnemyHQLocation());
 		next=null;
-		
+		facing = getRandDir();
     }
     
     public void run()
 	{
 		rc.setIndicatorString(1, "Searching: " + exploring);
 		try {
-			mowTheLawn();
+			mow();
 		} catch (Exception e) {
 			e.printStackTrace();
 		}
@@ -37,14 +37,31 @@ public class MinerLogic extends RobotLogic {
     		roam();
     	}
     }
-    /*
-    public void mow(){
+    
+    public void mow() throws GameActionException{
     	loc = rc.getLocation();
-    	for(
-    		
-    		
-    	last = loc;
-    }*/
+    	double curOre = rc.senseOre(loc);
+    	if(curOre>0){
+    		if (rc.isCoreReady() && rc.canMine()){
+                rc.mine();
+            }
+    	} else{
+    		if(!rc.isCoreReady()){
+    			return;
+    		}
+    		next = loc.add(facing);
+    		Direction tempface = facing;
+	    	for(int i=0; i<8; i++){
+	    		tempface = tempface.rotateRight();
+	    		MapLocation tempnext = loc.add(tempface);
+	    		if(rc.senseOre(tempnext)>0 && !rc.isLocationOccupied(tempnext) && rc.canMove(tempface)){
+	    			rc.move(tempface);
+	    			return;
+	    		}
+	    	}
+	    	moveAwayFrom(loc.add(facing.opposite()));	
+    	}
+    }
     
    
    /**
@@ -146,4 +163,27 @@ public class MinerLogic extends RobotLogic {
 		}
 	}
     */
+   
+   private Direction getRandDir(){
+	   Random rand = new Random(rc.getID());
+	   int dirNum = rand.nextInt(8);
+	   switch(dirNum){
+	   case 0:
+		   return Direction.NORTH;
+	   case 1:
+		   return Direction.NORTH_EAST;
+	   case 2:
+		   return Direction.EAST;
+	   case 3:
+		   return Direction.SOUTH_EAST;
+	   case 4:
+		   return Direction.SOUTH;
+	   case 5:
+		   return Direction.SOUTH_WEST;
+	   case 6:
+		   return Direction.WEST;
+	   default:
+		   return Direction.NORTH_WEST;
+	   }
+   }
 }
