@@ -68,13 +68,13 @@ public class BeaverLogic extends RobotLogic{
 				if(build(RobotType.MINERFACTORY)){
 					rc.yield();
 				}
-			}/*
-			if(heliNum<1){
+			}
+			if(heliNum<3){
 				if(build(RobotType.HELIPAD)){
 					rc.yield();
 				}
-			}*/
-			if(BarNum<1){
+			}
+			/*if(BarNum<1){
 				if(build(RobotType.BARRACKS)){
 					rc.yield();
 				}
@@ -83,7 +83,7 @@ public class BeaverLogic extends RobotLogic{
 				if(build(RobotType.TANKFACTORY)){
 					rc.yield();
 				}
-			}
+			}*/
 			return;
 		/*case 3:
 			if(mineFacNum<1){

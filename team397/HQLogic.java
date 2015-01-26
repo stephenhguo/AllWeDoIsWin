@@ -198,7 +198,7 @@ public class HQLogic extends RobotLogic{
 		} else if(numTank<=7){
 			retreat(RobotType.TANK);
 		}	
-		//swarmEnemyTower(RobotType.TANK);
+		swarmEnemyTower(RobotType.DRONE);
 	}
 	
 	public void swarmEnemyTower(RobotType type) throws GameActionException{

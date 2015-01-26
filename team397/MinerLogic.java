@@ -11,7 +11,7 @@ import battlecode.common.TerrainTile;
 public class MinerLogic extends RobotLogic {
 
 	private boolean mining, exploring;
-	private MapLocation loc,next;
+	private MapLocation last, loc, next;
 	private Direction dir;
 	
     public MinerLogic(RobotController controller) throws GameActionException {
@@ -33,14 +33,18 @@ public class MinerLogic extends RobotLogic {
 	}
     
     public void emergencyRoam() throws GameActionException {
-    	if(rc.senseOre(rc.getLocation())<1.0){
+    	if(rc.senseOre(rc.getLocation())==0.0){
     		roam();
     	}
     }
-    
+    /*
     public void mow(){
-    	
-    }
+    	loc = rc.getLocation();
+    	for(
+    		
+    		
+    	last = loc;
+    }*/
     
    
    /**
