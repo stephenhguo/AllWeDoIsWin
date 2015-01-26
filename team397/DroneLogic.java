@@ -49,7 +49,7 @@ public class DroneLogic extends RobotLogic {
 			}
 			*/
 		}
-		else{
+		else if(team == radio.ATTACK_TEAM){
 			attack(myRange);
 			attTarget = radio.getSwarmLoc(RobotType.DRONE);
 			int attRad = radio.getSwarmRadius(RobotType.DRONE);
@@ -57,6 +57,10 @@ public class DroneLogic extends RobotLogic {
 				simpleGoal(attTarget, attRad);
 			else
 				goAttack(false, attTarget, attRad);
+		}
+		else{
+			attack(myRange);
+			simpleGoal(rc.senseHQLocation());
 		}
 	}
 
