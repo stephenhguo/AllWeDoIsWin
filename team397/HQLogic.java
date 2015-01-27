@@ -10,7 +10,7 @@ public class HQLogic extends RobotLogic{
 	private int commandersSpawned;
 	private boolean beaversSearching, minersSearching;
 	//private final int MINEPORT = 1;
-	
+
 	public HQLogic(RobotController controller) throws GameActionException
 	{
 		super(controller);
@@ -155,8 +155,8 @@ public class HQLogic extends RobotLogic{
 		
 		//if(numDrone - (attackSize + huntSize + supplySize) >= 5)
 		//	minHuntSize = 5;
-		if(numDrone - (huntSize + supplySize) > 15)
-			minAttackSize = 15;
+		if(numDrone - (huntSize + supplySize) >= 20)
+			minAttackSize = 20;
 		else
 			radio.setHunterSwitch(radio.HUNT_TEAM);
 		
@@ -164,7 +164,7 @@ public class HQLogic extends RobotLogic{
 		radio.setWanted(RobotType.DRONE, radio.HUNT_TEAM, Math.max(minHuntSize - huntSize, 0));
 		radio.setWanted(RobotType.DRONE, radio.SUPPLY_TEAM, Math.max(minSupplySize - supplySize, 0));
 		
-		numDrone = numDrone - (huntSize + supplySize);
+		numDrone = attackSize;
 		rc.setIndicatorString(0, "Number of attack drones:" + attackSize);
 		rc.setIndicatorString(1, "Number of hunt drones:" + huntSize);
 		//System.out.println("" + attackSize + ", " + huntSize);
@@ -198,7 +198,10 @@ public class HQLogic extends RobotLogic{
 		} else if(numTank<=7){
 			retreat(RobotType.TANK);
 		}	
-		swarmEnemyTower(RobotType.DRONE);
+		if(numDrone >7)
+			swarmEnemyTower(RobotType.DRONE);
+		else
+			retreat(RobotType.DRONE);
 	}
 	
 	public void swarmEnemyTower(RobotType type) throws GameActionException{

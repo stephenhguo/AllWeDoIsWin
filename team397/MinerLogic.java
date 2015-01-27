@@ -13,6 +13,7 @@ public class MinerLogic extends RobotLogic {
 	private MapLocation loc, next;
 	private Direction dir;
 	private Direction facing;
+	private double originalOre;
 	
     public MinerLogic(RobotController controller) throws GameActionException {
     	super(controller);
@@ -41,26 +42,137 @@ public class MinerLogic extends RobotLogic {
     public void mow() throws GameActionException{
     	loc = rc.getLocation();
     	double curOre = rc.senseOre(loc);
-    	if(curOre>0){
+    	if(curOre> originalOre/2){
     		if (rc.isCoreReady() && rc.canMine()){
+    			
                 rc.mine();
             }
     	} else{
     		if(!rc.isCoreReady()){
     			return;
     		}
-    		next = loc.add(facing);
-    		Direction tempface = facing;
-	    	for(int i=0; i<8; i++){
-	    		tempface = tempface.rotateRight();
-	    		MapLocation tempnext = loc.add(tempface);
-	    		if(rc.senseOre(tempnext)>0 && !rc.isLocationOccupied(tempnext) && rc.canMove(tempface)){
-	    			rc.move(tempface);
-	    			return;
+
+    		Direction toHQ = loc.directionTo(rc.senseHQLocation()), tempface;
+			Direction[] dirs;
+			Direction[] dirs_L = {toHQ.rotateLeft().rotateLeft(),
+    				toHQ.rotateLeft().rotateLeft().rotateLeft(),
+    				toHQ.rotateLeft(),
+    				toHQ.rotateRight().rotateRight(),
+    				toHQ.rotateRight().rotateRight().rotateLeft(),
+    				toHQ.rotateRight(),
+                    toHQ.opposite(),
+                    toHQ};
+			Direction[] dirs_R = {toHQ.rotateRight().rotateRight(),
+    				toHQ.rotateRight().rotateRight().rotateLeft(),
+    				toHQ.rotateRight(),
+    				toHQ.rotateLeft().rotateLeft(),
+    				toHQ.rotateLeft().rotateLeft().rotateLeft(),
+    				toHQ.rotateLeft(),
+                    toHQ.opposite(),
+                    toHQ};
+    		if (Xprod(toHQ, facing) >= 0) //if facing to left of HQ
+    			dirs = dirs_L;
+    		else
+    			dirs = dirs_R;
+    		double oreThere, maxOre = -1;
+    		Direction maxD = null;
+    		MapLocation tempnext, maxNext = null;
+	    	for(int i=0; i<3; i++){
+	    		tempface = dirs[i];
+	    		tempnext = loc.add(tempface);
+	    		oreThere = rc.senseOre(tempnext);
+	    		if(oreThere > maxOre && !rc.isLocationOccupied(tempnext) && rc.canMove(tempface)){
+	    			maxOre = oreThere;
+	    			maxD = tempface;
+	    			maxNext = tempnext;
 	    		}
 	    	}
+    		if(maxD != null && maxOre >= curOre && !rc.isLocationOccupied(maxNext) && rc.canMove(maxD)){
+    			originalOre = maxOre;
+    			rc.move(maxD);
+    			return;
+    		}
+    		maxOre = -1;
+    		maxD = null;
+    		maxNext = null;
+	    	for(int i=3; i<6; i++){
+	    		tempface = dirs[i];
+	    		tempnext = loc.add(tempface);
+	    		oreThere = rc.senseOre(tempnext);
+	    		if(oreThere > maxOre && !rc.isLocationOccupied(tempnext) && rc.canMove(tempface)){
+	    			maxOre = oreThere;
+	    			maxD = tempface;
+	    			maxNext = tempnext;
+	    		}
+	    	}
+    		if(maxD != null && maxOre >= curOre && !rc.isLocationOccupied(maxNext) && rc.canMove(maxD)){
+    			originalOre = maxOre;
+    			rc.move(maxD);
+    			return;
+    		}
+    		maxOre = -1;
+    		maxD = null;
+    		maxNext = null;
+	    	for(int i=6; i<dirs.length; i++){
+	    		tempface = dirs[i];
+	    		tempnext = loc.add(tempface);
+	    		oreThere = rc.senseOre(tempnext);
+	    		if(oreThere > maxOre && !rc.isLocationOccupied(tempnext) && rc.canMove(tempface)){
+	    			maxOre = oreThere;
+	    			maxD = tempface;
+	    			maxNext = tempnext;
+	    		}
+	    	}
+    		if(maxD != null && maxOre >= curOre && !rc.isLocationOccupied(maxNext) && rc.canMove(maxD)){
+    			originalOre = maxOre;
+    			rc.move(maxD);
+    			return;
+    		}
+	    	
 	    	moveAwayFrom(loc.add(facing.opposite()));	
     	}
+    }
+    
+    private int Xprod(Direction dir1, Direction dir2){
+    	int[] v1 = toVector(dir1), v2 = toVector(dir2);
+    	return v1[0]*v2[1] - v1[1]*v2[0];
+    }
+    
+    private int[] toVector(Direction dir){
+    	int[] result = new int[2];
+    	if(dir.equals(Direction.NORTH)){
+    		result[0] = 0;
+    		result[1] = 1;
+    	}
+    	else if(dir.equals(Direction.NORTH_WEST)){
+    		result[0] = -1;
+    		result[1] = 1;
+    	}
+    	else if(dir.equals(Direction.WEST)){
+    		result[0] = -1;
+    		result[1] = 0;
+    	}
+    	else if(dir.equals(Direction.SOUTH_WEST)){
+    		result[0] = -1;
+    		result[1] = -1;
+    	}
+    	else if(dir.equals(Direction.SOUTH)){
+    		result[0] = 0;
+    		result[1] = -1;
+    	}
+    	else if(dir.equals(Direction.SOUTH_EAST)){
+    		result[0] = 1;
+    		result[1] = -1;
+    	}
+    	else if(dir.equals(Direction.EAST)){
+    		result[0] = 1;
+    		result[1] = 0;
+    	}
+    	else if(dir.equals(Direction.NORTH_EAST)){
+    		result[0] = 1;
+    		result[1] = 1;
+    	}
+    	return result;
     }
     
    
